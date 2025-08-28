@@ -1,0 +1,535 @@
+import React, { useState, useRef, useEffect } from 'react';
+import VideoPlayer from './components/VideoPlayer';
+import Controls from './components/Controls';
+import Settings from './components/Settings';
+import InfoModal from './components/InfoModal';
+import ConfirmModal from './components/ConfirmModal';
+import SessionRestoreModal from './components/SessionRestoreModal';
+import ExportProgressOverlay from './components/ExportProgressOverlay';
+import './App.css';
+
+const { ipcRenderer } = window.require('electron');
+const path = window.require('path');
+
+function App() {
+  const [videoFile, setVideoFile] = useState(null);
+  const [videoFilePath, setVideoFilePath] = useState(null);
+  const [videoFileName, setVideoFileName] = useState(null);
+  const [videoMetadata, setVideoMetadata] = useState(null);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [inPoint, setInPoint] = useState(0);
+  const [outPoint, setOutPoint] = useState(0);
+  const [fadeIn, setFadeIn] = useState(0);
+  const [fadeOut, setFadeOut] = useState(0);
+  const [audioFadeIn, setAudioFadeIn] = useState(0);
+  const [audioFadeOut, setAudioFadeOut] = useState(0);
+  const [silenceAtStart, setSilenceAtStart] = useState(0);
+  const [blackScreenAtStart, setBlackScreenAtStart] = useState(0);
+  const [exportQuality, setExportQuality] = useState('high'); // 'low', 'medium', 'high'
+  const [exportSize, setExportSize] = useState(100); // percentage of original size
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingProgress, setProcessingProgress] = useState(0);
+  const [outputFilePath, setOutputFilePath] = useState(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [exportType, setExportType] = useState('video'); // 'video' or 'audio'
+  const [infoModal, setInfoModal] = useState({ isOpen: false, title: '', message: '', type: 'info' });
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: '', message: '', onConfirm: null });
+  const [sessionRestoreModal, setSessionRestoreModal] = useState({ isOpen: false, sessionState: null });
+
+
+  const videoRef = useRef(null);
+
+  const showInfoModal = (title, message, type = 'info') => {
+    setInfoModal({ isOpen: true, title, message, type });
+  };
+
+  const closeInfoModal = () => {
+    setInfoModal({ isOpen: false, title: '', message: '', type: 'info' });
+  };
+
+  const showConfirmModal = (title, message, onConfirm) => {
+    setConfirmModal({ isOpen: true, title, message, onConfirm });
+  };
+
+  const closeConfirmModal = () => {
+    setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: null });
+  };
+
+  const closeSessionRestoreModal = () => {
+    setSessionRestoreModal({ isOpen: false, sessionState: null });
+  };
+
+  useEffect(() => {
+    // Listen for processing events
+    ipcRenderer.on('processing-started', () => {
+      setIsProcessing(true);
+      setProcessingProgress(0);
+    });
+
+    ipcRenderer.on('processing-progress', (event, progress) => {
+      setProcessingProgress(progress.percent || 0);
+    });
+
+    ipcRenderer.on('processing-cancelled', () => {
+      setIsProcessing(false);
+      setProcessingProgress(0);
+      showInfoModal('Export Cancelled', 'The export process was cancelled successfully.', 'info');
+    });
+
+    // Check for session state to restore
+    const checkSessionState = async () => {
+      try {
+        const sessionState = await ipcRenderer.invoke('get-session-state');
+        if (sessionState && sessionState.videoFilePath) {
+          setSessionRestoreModal({ isOpen: true, sessionState });
+        }
+      } catch (error) {
+        console.log('No session state to restore or error loading:', error);
+      }
+    };
+
+    checkSessionState();
+
+    return () => {
+      ipcRenderer.removeAllListeners('processing-started');
+      ipcRenderer.removeAllListeners('processing-progress');
+      ipcRenderer.removeAllListeners('processing-cancelled');
+    };
+  }, []);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (!videoFile) return; // Only handle shortcuts if video is loaded
+      
+      switch (event.key) {
+        case ' ':
+          event.preventDefault();
+          handlePlayPause();
+          break;
+        case 'ArrowLeft':
+          event.preventDefault();
+          handleSeek(Math.max(0, currentTime - 10));
+          break;
+        case 'ArrowRight':
+          event.preventDefault();
+          handleSeek(Math.min(duration, currentTime + 10));
+          break;
+        default:
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [videoFile, currentTime, duration]);
+
+  const handleLoadVideo = async () => {
+    try {
+      const result = await ipcRenderer.invoke('open-file-dialog');
+      if (!result.canceled && result.filePaths.length > 0) {
+        const filePath = result.filePaths[0];
+        
+        // Store the original file path for processing
+        setVideoFilePath(filePath);
+        setVideoFileName(path.basename(filePath));
+        
+        // Get video metadata first
+        const metadata = await ipcRenderer.invoke('get-video-info', filePath);
+        setVideoMetadata(metadata);
+        
+        // Get the video URL for the player
+        const videoUrl = await ipcRenderer.invoke('get-video-url', filePath);
+        setVideoFile(videoUrl);
+        
+        const videoDuration = metadata.format.duration;
+        setDuration(videoDuration);
+        setOutPoint(videoDuration);
+        setCurrentTime(0);
+        setInPoint(0);
+        setFadeIn(0);
+        setFadeOut(0);
+        setAudioFadeIn(0);
+        setAudioFadeOut(0);
+        setSilenceAtStart(0);
+        setBlackScreenAtStart(0);
+        setExportQuality('high');
+        setExportSize(100);
+      }
+    } catch (error) {
+      console.error('Error loading video:', error);
+      showInfoModal('Error Loading Video', error.message, 'error');
+    }
+  };
+
+  const handleTimeUpdate = (time) => {
+    setCurrentTime(time);
+  };
+
+  const handleSeek = (time) => {
+    setCurrentTime(time);
+    if (videoRef.current) {
+      videoRef.current.currentTime = time;
+    }
+  };
+
+  const handlePlayPause = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const handleSetInPoint = () => {
+    setInPoint(currentTime);
+  };
+
+  const handleSetOutPoint = () => {
+    setOutPoint(currentTime);
+  };
+
+  const handleClearClipPoints = () => {
+    showConfirmModal(
+      'Clear Clip Points',
+      'Are you sure you want to clear the current in and out points? This will reset the clip to the full video duration.',
+      () => {
+        setInPoint(0);
+        setOutPoint(duration);
+        closeConfirmModal();
+      }
+    );
+  };
+
+  const handleSessionRestore = async (restoreData) => {
+    try {
+      // Restore video file if selected
+      if (restoreData.videoFilePath) {
+        setVideoFilePath(restoreData.videoFilePath);
+        setVideoFileName(restoreData.videoFileName);
+        
+        // Get video metadata and URL
+        const metadata = await ipcRenderer.invoke('get-video-info', restoreData.videoFilePath);
+        setVideoMetadata(metadata);
+        
+        const videoUrl = await ipcRenderer.invoke('get-video-url', restoreData.videoFilePath);
+        setVideoFile(videoUrl);
+        
+        const videoDuration = metadata.format.duration;
+        setDuration(videoDuration);
+      }
+      
+             // Restore other values
+       if (restoreData.inPoint !== undefined) setInPoint(restoreData.inPoint);
+       if (restoreData.outPoint !== undefined) setOutPoint(restoreData.outPoint);
+       if (restoreData.fadeIn !== undefined) setFadeIn(restoreData.fadeIn);
+       if (restoreData.fadeOut !== undefined) setFadeOut(restoreData.fadeOut);
+       if (restoreData.audioFadeIn !== undefined) setAudioFadeIn(restoreData.audioFadeIn);
+       if (restoreData.audioFadeOut !== undefined) setAudioFadeOut(restoreData.audioFadeOut);
+       if (restoreData.silenceAtStart !== undefined) setSilenceAtStart(restoreData.silenceAtStart);
+       if (restoreData.blackScreenAtStart !== undefined) setBlackScreenAtStart(restoreData.blackScreenAtStart);
+       if (restoreData.exportQuality !== undefined) setExportQuality(restoreData.exportQuality);
+       if (restoreData.exportSize !== undefined) setExportSize(restoreData.exportSize);
+       if (restoreData.exportType !== undefined) setExportType(restoreData.exportType);
+      
+      showInfoModal('Session Restored', 'Your previous session settings have been restored successfully.', 'success');
+    } catch (error) {
+      console.error('Error restoring session:', error);
+      showInfoModal('Restore Error', 'Failed to restore some session settings. The video file may no longer be available.', 'warning');
+    }
+  };
+
+  // Save session state whenever relevant values change
+  const saveSessionState = async () => {
+    if (videoFilePath) {
+      const sessionState = {
+        videoFilePath,
+        videoFileName,
+        inPoint,
+        outPoint,
+        fadeIn,
+        fadeOut,
+        audioFadeIn,
+        audioFadeOut,
+        silenceAtStart,
+        blackScreenAtStart,
+        exportQuality,
+        exportSize,
+        exportType
+      };
+      
+      try {
+        await ipcRenderer.invoke('save-session-state', sessionState);
+      } catch (error) {
+        console.error('Error saving session state:', error);
+      }
+    }
+  };
+
+  // Auto-save session state when values change
+  useEffect(() => {
+    saveSessionState();
+  }, [videoFilePath, videoFileName, inPoint, outPoint, fadeIn, fadeOut, audioFadeIn, audioFadeOut, silenceAtStart, blackScreenAtStart, exportQuality, exportSize, exportType]);
+
+  const handleExport = async () => {
+    if (!videoFilePath) {
+      showInfoModal('Export Error', 'No video file loaded. Please load a video first.', 'error');
+      return;
+    }
+
+    const clipDuration = outPoint - inPoint;
+    if (clipDuration <= 0) {
+      showInfoModal('Export Error', 'Invalid clip duration. Please set valid in and out points.', 'error');
+      return;
+    }
+
+    try {
+      console.log('Opening save dialog for export type:', exportType);
+      const result = await ipcRenderer.invoke('save-file-dialog', exportType);
+      console.log('Save dialog result:', result);
+      
+      if (result.canceled) {
+        console.log('User canceled save dialog');
+        return;
+      }
+      
+             if (!result.filePath) {
+         showInfoModal('Export Error', 'No file path selected.', 'error');
+         return;
+       }
+
+       setOutputFilePath(result.filePath);
+
+       console.log('Starting export with parameters:', {
+        inputPath: videoFilePath,
+        outputPath: result.filePath,
+        startTime: inPoint,
+        duration: clipDuration,
+        fadeIn: fadeIn,
+        fadeOut: fadeOut,
+        audioFadeIn: audioFadeIn,
+        audioFadeOut: audioFadeOut,
+        silenceAtStart: silenceAtStart,
+        blackScreenAtStart: blackScreenAtStart,
+        exportQuality: exportQuality,
+        exportSize: exportSize,
+        exportType: exportType
+      });
+
+      const exportResult = await ipcRenderer.invoke('process-video', {
+        inputPath: videoFilePath,
+        outputPath: result.filePath,
+        startTime: inPoint,
+        duration: clipDuration,
+        fadeIn: fadeIn,
+        fadeOut: fadeOut,
+        audioFadeIn: audioFadeIn,
+        audioFadeOut: audioFadeOut,
+        silenceAtStart: silenceAtStart,
+        blackScreenAtStart: blackScreenAtStart,
+        exportQuality: exportQuality,
+        exportSize: exportSize,
+        exportType: exportType
+      });
+      
+             console.log('Export completed:', exportResult);
+       setIsProcessing(false);
+       setOutputFilePath(null);
+       const fileType = exportType === 'audio' ? 'Audio' : 'Video';
+      
+      // Show success modal with option to open folder
+      const fileName = path.basename(result.filePath);
+      showInfoModal(
+        'Export Successful', 
+        `${fileType} exported successfully!\n\nFile: ${fileName}\nLocation: ${path.dirname(result.filePath)}`, 
+        'success'
+      );
+      
+      // Optionally show the file in folder after a delay
+      setTimeout(async () => {
+        try {
+          await ipcRenderer.invoke('show-item-in-folder', result.filePath);
+        } catch (error) {
+          console.log('Could not show file in folder:', error);
+        }
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Error exporting:', error);
+      
+      // Handle cancellation differently from other errors
+      if (error.message.includes('cancelled by user')) {
+        showInfoModal('Export Cancelled', 'The export was cancelled by the user.', 'info');
+             } else {
+         showInfoModal('Export Error', `Failed to export: ${error.message}`, 'error');
+       }
+       setIsProcessing(false);
+       setOutputFilePath(null);
+    }
+  };
+
+  const handleCancelExport = async () => {
+    try {
+      const result = await ipcRenderer.invoke('cancel-export');
+      if (!result.success) {
+        showInfoModal('Cancel Error', result.message, 'warning');
+      }
+    } catch (error) {
+      console.error('Cancel export error:', error);
+      showInfoModal('Cancel Error', `Error cancelling export: ${error.message}`, 'error');
+    }
+  };
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <div className="app">
+      <div className="header">
+        <div className="logo">PHEdit</div>
+        <div className="header-controls">
+          <button className="btn btn-secondary" onClick={() => setShowSettings(true)}>
+            Settings
+          </button>
+          <button className="btn" onClick={handleLoadVideo}>
+            Load Video
+          </button>
+        </div>
+      </div>
+      
+      <div className="main-content">
+                 <div className={`video-container ${isPlaying ? 'playing' : ''}`}>
+          {videoFile ? (
+            <>
+                             <VideoPlayer
+                 ref={videoRef}
+                 src={videoFile}
+                 onTimeUpdate={handleTimeUpdate}
+                 onLoadedMetadata={(e) => {
+                   setDuration(e.target.duration);
+                   setOutPoint(e.target.duration);
+                 }}
+                 currentTime={currentTime}
+                 videoMetadata={videoMetadata}
+                 isPlaying={isPlaying}
+                 onPlayPause={handlePlayPause}
+                 onSeek={handleSeek}
+                 duration={duration}
+                 hasVideo={!!videoFile}
+               />
+              <div className="file-info">
+                <div className="file-name">{videoFileName}</div>
+                <div className="file-path">{videoFilePath}</div>
+              </div>
+            </>
+          ) : (
+            <div className="no-video">
+              <p>No video loaded</p>
+              <p>Click "Load Video" to get started</p>
+            </div>
+          )}
+        </div>
+
+        <div className="controls-panel">
+          <Controls
+            isPlaying={isPlaying}
+            onPlayPause={handlePlayPause}
+            onSetInPoint={handleSetInPoint}
+            onSetOutPoint={handleSetOutPoint}
+            onClearClipPoints={handleClearClipPoints}
+            inPoint={inPoint}
+            outPoint={outPoint}
+            fadeIn={fadeIn}
+            fadeOut={fadeOut}
+            onFadeInChange={setFadeIn}
+            onFadeOutChange={setFadeOut}
+            audioFadeIn={audioFadeIn}
+            audioFadeOut={audioFadeOut}
+            onAudioFadeInChange={setAudioFadeIn}
+            onAudioFadeOutChange={setAudioFadeOut}
+            silenceAtStart={silenceAtStart}
+            onSilenceAtStartChange={setSilenceAtStart}
+            blackScreenAtStart={blackScreenAtStart}
+            onBlackScreenAtStartChange={setBlackScreenAtStart}
+            exportQuality={exportQuality}
+            onExportQualityChange={setExportQuality}
+            exportSize={exportSize}
+            onExportSizeChange={setExportSize}
+            onExport={handleExport}
+            onCancelExport={handleCancelExport}
+            isProcessing={isProcessing}
+            processingProgress={processingProgress}
+            formatTime={formatTime}
+            hasVideo={!!videoFile}
+            exportType={exportType}
+            onExportTypeChange={setExportType}
+            currentTime={currentTime}
+            duration={duration}
+            onSeek={handleSeek}
+          />
+        </div>
+      </div>
+
+      <Settings 
+        isOpen={showSettings} 
+        onClose={() => setShowSettings(false)} 
+      />
+
+      <InfoModal
+        isOpen={infoModal.isOpen}
+        onClose={closeInfoModal}
+        title={infoModal.title}
+        message={infoModal.message}
+        type={infoModal.type}
+      />
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={closeConfirmModal}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+      />
+
+             <SessionRestoreModal
+         isOpen={sessionRestoreModal.isOpen}
+         onClose={closeSessionRestoreModal}
+         onRestore={handleSessionRestore}
+         sessionState={sessionRestoreModal.sessionState}
+       />
+
+       <ExportProgressOverlay
+         isVisible={isProcessing}
+         progress={processingProgress}
+         exportType={exportType}
+         onCancel={handleCancelExport}
+         sourceFile={videoFileName || 'Unknown'}
+         outputFile={outputFilePath ? path.basename(outputFilePath) : 'Not started'}
+         exportOptions={isProcessing ? {
+           startTime: inPoint,
+           duration: outPoint - inPoint,
+           fadeIn,
+           fadeOut,
+           audioFadeIn,
+           audioFadeOut,
+           silenceAtStart,
+           blackScreenAtStart,
+           exportQuality,
+           exportSize
+         } : null}
+       />
+     </div>
+   );
+ }
+
+export default App;
