@@ -1,6 +1,6 @@
 import React, { useRef, useState, useCallback } from 'react';
 
-const Timeline = ({ currentTime, duration, inPoint, outPoint, onSeek, onSetInPoint, onSetOutPoint, formatTime }) => {
+const Timeline = ({ currentTime, duration, inPoint, outPoint, onSeek, onSetInPoint, onSetOutPoint, formatTime, hasVideo = false }) => {
   const timelineRef = useRef(null);
   const clipTrackRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -31,6 +31,8 @@ const Timeline = ({ currentTime, duration, inPoint, outPoint, onSeek, onSetInPoi
   }, []);
 
   const handleMouseDown = useCallback((e, type = 'playhead') => {
+    if (!hasVideo) return; // Disable interactions when no video is loaded
+    
     e.preventDefault();
     e.stopPropagation();
     
@@ -51,7 +53,7 @@ const Timeline = ({ currentTime, duration, inPoint, outPoint, onSeek, onSetInPoi
         setDragStartValue(outPoint);
         break;
     }
-  }, [currentTime, inPoint, outPoint, getTimeFromPosition, onSeek]);
+  }, [currentTime, inPoint, outPoint, getTimeFromPosition, onSeek, hasVideo]);
 
   const handleMouseMove = useCallback((e) => {
     // Show tooltip on hover (only for main track when not dragging)

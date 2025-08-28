@@ -26,6 +26,7 @@ function createWindow() {
       webSecurity: false
     },
     titleBarStyle: 'default',
+    autoHideMenuBar: true,
     show: false
   });
 

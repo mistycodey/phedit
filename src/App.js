@@ -6,6 +6,7 @@ import InfoModal from './components/InfoModal';
 import ConfirmModal from './components/ConfirmModal';
 import SessionRestoreModal from './components/SessionRestoreModal';
 import ExportProgressOverlay from './components/ExportProgressOverlay';
+import Help from './components/Help';
 import './App.css';
 
 const { ipcRenderer } = window.require('electron');
@@ -37,6 +38,7 @@ function App() {
   const [infoModal, setInfoModal] = useState({ isOpen: false, title: '', message: '', type: 'info' });
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: '', message: '', onConfirm: null });
   const [sessionRestoreModal, setSessionRestoreModal] = useState({ isOpen: false, sessionState: null });
+  const [showHelp, setShowHelp] = useState(false);
 
 
   const videoRef = useRef(null);
@@ -116,6 +118,16 @@ function App() {
         case 'ArrowRight':
           event.preventDefault();
           handleSeek(Math.min(duration, currentTime + 10));
+          break;
+        case 'i':
+        case 'I':
+          event.preventDefault();
+          handleSetInPoint();
+          break;
+        case 'o':
+        case 'O':
+          event.preventDefault();
+          handleSetOutPoint();
           break;
         default:
           break;
@@ -394,10 +406,13 @@ function App() {
   };
 
   return (
-    <div className="app">
+    <div className={`app ${!videoFile ? 'no-video-loaded' : ''}`}>
       <div className="header">
         <div className="logo">PHEdit</div>
         <div className="header-controls">
+          <button className="btn btn-secondary" onClick={() => setShowHelp(true)}>
+            Help
+          </button>
           <button className="btn btn-secondary" onClick={() => setShowSettings(true)}>
             Settings
           </button>
@@ -434,13 +449,25 @@ function App() {
             </>
           ) : (
             <div className="no-video">
-              <p>No video loaded</p>
-              <p>Click "Load Video" to get started</p>
+              <div className="no-video-content">
+                <div className="no-video-icon">📹</div>
+                <h3>No Video Loaded</h3>
+                <p>Click "Load Video" to get started</p>
+                <p className="no-video-hint">All controls will be enabled once you load a video file</p>
+              </div>
             </div>
           )}
         </div>
 
         <div className="controls-panel">
+          {!videoFile && (
+            <div className="controls-disabled-overlay">
+              <div className="controls-disabled-message">
+                <span>📹</span>
+                <p>Load a video to enable controls</p>
+              </div>
+            </div>
+          )}
           <Controls
             isPlaying={isPlaying}
             onPlayPause={handlePlayPause}
@@ -483,6 +510,11 @@ function App() {
       <Settings 
         isOpen={showSettings} 
         onClose={() => setShowSettings(false)} 
+      />
+
+      <Help
+        isOpen={showHelp}
+        onClose={() => setShowHelp(false)}
       />
 
       <InfoModal
