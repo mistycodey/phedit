@@ -12,6 +12,7 @@ A minimal video editor built with Electron and React, powered by FFmpeg for vide
 - **Progress Tracking**: Real-time progress updates during video processing
 - **Settings System**: Configure FFmpeg executable paths with auto-detection and validation
 - **Persistent Configuration**: Settings are automatically saved and restored between sessions
+- **Comprehensive Help System**: Built-in help guide with step-by-step instructions and FFmpeg installation guidance
 
 ## Prerequisites
 
@@ -82,7 +83,12 @@ The built application will be available in the `dist` folder.
 
 ### First Time Setup
 
-1. **Configure FFmpeg Paths** (if needed):
+1. **Get Help** (recommended for new users):
+   - Click the "Help" button in the header for comprehensive guidance
+   - The help system includes step-by-step instructions and FFmpeg installation guidance
+   - Perfect for users who are new to video editing
+
+2. **Configure FFmpeg Paths** (if needed):
    - Click the "Settings" button in the header
    - The application will try to auto-detect FFmpeg executables
    - If auto-detection fails, manually set the paths to `ffmpeg` and `ffprobe` executables
@@ -101,6 +107,14 @@ The built application will be available in the `dist` folder.
    - Set fade-in duration (in seconds) to fade from black at the start
    - Set fade-out duration (in seconds) to fade to black at the end
 6. **Export**: Click "Export Video" to process and save your edited video
+
+### Keyboard Shortcuts
+
+- **Spacebar**: Play/Pause video
+- **Left Arrow**: Jump back 10 seconds
+- **Right Arrow**: Jump forward 10 seconds
+- **I**: Set In Point
+- **O**: Set Out Point
 
 ### Settings
 

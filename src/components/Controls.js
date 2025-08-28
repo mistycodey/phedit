@@ -56,6 +56,7 @@ const Controls = ({
           onSetInPoint={onSetInPoint}
           onSetOutPoint={onSetOutPoint}
           formatTime={formatTime}
+          hasVideo={hasVideo}
         />
       </div>
 
