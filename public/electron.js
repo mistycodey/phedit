@@ -4,6 +4,7 @@ const fs = require('fs');
 const isDev = require('electron-is-dev');
 const ffmpeg = require('fluent-ffmpeg');
 const ConfigManager = require('./config');
+const packageJson = require('../package.json');
 
 let mainWindow;
 let configManager;
@@ -19,6 +20,7 @@ function createWindow() {
     height: 800,
     minWidth: 800, /* Increased minimum width for better layout */
     minHeight: 600, /* Increased minimum height to ensure all UI elements are visible */
+    title: `PHEdit v${packageJson.version}`,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -42,6 +44,13 @@ function createWindow() {
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
+    // Set title after content loads to ensure it overrides HTML title
+    mainWindow.setTitle(`PHEdit v${packageJson.version}`);
+  });
+
+  // Also set title when page finishes loading
+  mainWindow.webContents.once('did-finish-load', () => {
+    mainWindow.setTitle(`PHEdit v${packageJson.version}`);
   });
 
   mainWindow.on('closed', () => {
