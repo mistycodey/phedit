@@ -35,7 +35,10 @@ const Controls = ({
   onExportTypeChange,
   currentTime,
   duration,
-  onSeek
+  onSeek,
+  onPreviewClip,
+  isPreviewMode,
+  onMousePositionUpdate
 }) => {
   const clipDuration = outPoint - inPoint;
   const maxFadeIn = clipDuration / 2;
@@ -57,6 +60,9 @@ const Controls = ({
           onSetOutPoint={onSetOutPoint}
           formatTime={formatTime}
           hasVideo={hasVideo}
+          onPreviewClip={onPreviewClip}
+          isPreviewMode={isPreviewMode}
+          onMousePositionUpdate={onMousePositionUpdate}
         />
       </div>
 
@@ -64,53 +70,11 @@ const Controls = ({
       <div className="controls-grid">
 
 
-        {/* Clip Selection */}
-        <div className="control-pane">
-          <h3>Clip Selection</h3>
-          <div className="control-row">
-            <button 
-              className="btn btn-secondary" 
-              onClick={onSetInPoint}
-              disabled={!hasVideo}
-            >
-              Set In Point
-            </button>
-            <span className="status-text">In: {formatTime(inPoint)}</span>
-          </div>
-          <div className="control-row">
-            <button 
-              className="btn btn-secondary" 
-              onClick={onSetOutPoint}
-              disabled={!hasVideo}
-            >
-              Set Out Point
-            </button>
-            <span className="status-text">Out: {formatTime(outPoint)}</span>
-          </div>
-          <div className="control-row">
-            <span className="status-text">
-              Clip Duration: {formatTime(clipDuration)}
-            </span>
-          </div>
-          <div className="control-row">
-            <button 
-              className="btn btn-secondary" 
-              onClick={onClearClipPoints}
-              disabled={!hasVideo}
-            >
-              Clear Clip Points
-            </button>
-          </div>
-          <div className="control-row">
-            <span className="status-text">
-              Keyboard shortcuts: Space (Play/Pause), ← → (Skip 10s)
-            </span>
-          </div>
-        </div>
 
-        {/* Video Fade Effects */}
-        <div className="control-pane">
-          <h3>Video Fade Effects</h3>
+
+        {/* Fade Effects */}
+        <div className="control-pane fade-effects-panel">
+          <h3>Fade Effects</h3>
           <div className="control-row">
             <div className="input-group">
               <label>Video Fade In:</label>
@@ -141,11 +105,6 @@ const Controls = ({
               <span className="status-text">seconds</span>
             </div>
           </div>
-        </div>
-
-        {/* Audio Fade Effects */}
-        <div className="control-pane">
-          <h3>Audio Fade Effects</h3>
           <div className="control-row">
             <div className="input-group">
               <label>Audio Fade In:</label>
@@ -178,9 +137,9 @@ const Controls = ({
           </div>
         </div>
 
-        {/* Audio Silence Control */}
-        <div className="control-pane">
-          <h3>Audio Silence</h3>
+        {/* Video Start Effects */}
+        <div className={`control-pane video-start-effects-panel ${exportType === 'audio' ? 'disabled-for-audio' : ''}`}>
+          <h3>Video Start Effects</h3>
           <div className="control-row">
             <div className="input-group">
               <label>Silence at Start:</label>
@@ -191,21 +150,11 @@ const Controls = ({
                 step="0.1"
                 value={silenceAtStart}
                 onChange={(e) => onSilenceAtStartChange(parseFloat(e.target.value) || 0)}
-                disabled={!hasVideo}
+                disabled={!hasVideo || exportType === 'audio'}
               />
               <span className="status-text">seconds</span>
             </div>
           </div>
-          <div className="control-row">
-            <span className="status-text">
-              Adds silence before audio fade-in effect
-            </span>
-          </div>
-        </div>
-
-        {/* Black Screen Control */}
-        <div className="control-pane">
-          <h3>Black Screen</h3>
           <div className="control-row">
             <div className="input-group">
               <label>Black Screen at Start:</label>
@@ -216,58 +165,62 @@ const Controls = ({
                 step="0.1"
                 value={blackScreenAtStart}
                 onChange={(e) => onBlackScreenAtStartChange(parseFloat(e.target.value) || 0)}
-                disabled={!hasVideo}
+                disabled={!hasVideo || exportType === 'audio'}
               />
               <span className="status-text">seconds</span>
             </div>
           </div>
           <div className="control-row">
             <span className="status-text">
-              Adds black screen before video fade-in effect
+              {exportType === 'audio' 
+                ? 'Video effects not applicable for audio-only export'
+                : 'Add silence and/or black screen before video begins'
+              }
             </span>
           </div>
         </div>
 
         {/* Export Options */}
-        {exportType === 'video' && (
-          <div className="control-pane">
-            <h3>Export Options</h3>
-            <div className="control-row">
-              <div className="input-group">
-                <label>Quality:</label>
-                <select
-                  value={exportQuality}
-                  onChange={(e) => onExportQualityChange(e.target.value)}
-                  disabled={!hasVideo}
-                >
-                  <option value="low">Low (Smaller file)</option>
-                  <option value="medium">Medium (Balanced)</option>
-                  <option value="high">High (Best quality)</option>
-                </select>
-              </div>
-            </div>
-            <div className="control-row">
-              <div className="input-group">
-                <label>Size:</label>
-                <select
-                  value={exportSize}
-                  onChange={(e) => onExportSizeChange(parseInt(e.target.value))}
-                  disabled={!hasVideo}
-                >
-                  <option value={25}>25% (Quarter size)</option>
-                  <option value={50}>50% (Half size)</option>
-                  <option value={75}>75% (Three quarters)</option>
-                  <option value={100}>100% (Original size)</option>
-                </select>
-              </div>
-            </div>
-            <div className="control-row">
-              <span className="status-text">
-                Quality affects file size and processing time. Size affects video dimensions.
-              </span>
+        <div className={`control-pane ${exportType === 'audio' ? 'disabled-for-audio' : ''}`}>
+          <h3>Export Options</h3>
+          <div className="control-row">
+            <div className="input-group">
+              <label>Quality:</label>
+              <select
+                value={exportQuality}
+                onChange={(e) => onExportQualityChange(e.target.value)}
+                disabled={!hasVideo || exportType === 'audio'}
+              >
+                <option value="low">Low (Smaller file)</option>
+                <option value="medium">Medium (Balanced)</option>
+                <option value="high">High (Best quality)</option>
+              </select>
             </div>
           </div>
-        )}
+          <div className="control-row">
+            <div className="input-group">
+              <label>Size:</label>
+              <select
+                value={exportSize}
+                onChange={(e) => onExportSizeChange(parseInt(e.target.value))}
+                disabled={!hasVideo || exportType === 'audio'}
+              >
+                <option value={25}>25% (Quarter size)</option>
+                <option value={50}>50% (Half size)</option>
+                <option value={75}>75% (Three quarters)</option>
+                <option value={100}>100% (Original size)</option>
+              </select>
+            </div>
+          </div>
+          <div className="control-row">
+            <span className="status-text">
+              {exportType === 'audio' 
+                ? 'Video quality and size settings not applicable for audio-only export'
+                : 'Quality affects file size and processing time. Size affects video dimensions.'
+              }
+            </span>
+          </div>
+        </div>
 
         {/* Export */}
         <div className="control-pane">

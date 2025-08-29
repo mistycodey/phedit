@@ -4,12 +4,26 @@ A minimal video editor built with Electron and React, powered by FFmpeg for vide
 
 ## Features
 
-- **Load Video**: Support for multiple video formats (MP4, AVI, MOV, MKV, WebM, FLV, M4V)
+### Startup & Mode Selection
+- **FFmpeg Detection**: Automatic detection of FFmpeg installation on startup
+- **Mode Selection**: Choose between Editor and Tasks modes
+- **Settings Integration**: Easy access to FFmpeg configuration from startup screen
+
+### Editor Mode
+- **Single Video Editing**: Load and edit individual video files
+- **Advanced Editing**: Set in/out points, fade effects, and transitions
 - **Video Scrubbing**: Click anywhere on the timeline to jump to that position
-- **Clip Selection**: Set in and out points to define the clip you want to export
+- **Video Trimming**: Set in and out points to define the section you want to export
 - **Fade Effects**: Add fade-in and fade-out effects to your video
 - **Video Export**: Process and export your edited video using FFmpeg
 - **Progress Tracking**: Real-time progress updates during video processing
+
+### Tasks Mode
+- **Quick Fade**: Add professional fade effects (6s fade in, 3s fade out) with one click
+- **Audio Rip**: Extract audio from video files in multiple formats (MP3, WAV, AAC)
+- **Batch Processing Ready**: Simple interface for quick operations
+
+### System Features
 - **Settings System**: Configure FFmpeg executable paths with auto-detection and validation
 - **Persistent Configuration**: Settings are automatically saved and restored between sessions
 - **Comprehensive Help System**: Built-in help guide with step-by-step instructions and FFmpeg installation guidance
@@ -83,30 +97,52 @@ The built application will be available in the `dist` folder.
 
 ### First Time Setup
 
-1. **Get Help** (recommended for new users):
-   - Click the "Help" button in the header for comprehensive guidance
-   - The help system includes step-by-step instructions and FFmpeg installation guidance
-   - Perfect for users who are new to video editing
+1. **Startup Screen**: 
+   - The app will automatically check for FFmpeg installation
+   - If FFmpeg is not found, you'll see options to download it or configure paths
+   - Click "Download FFmpeg" to visit the official download page
+   - Click "Configure FFmpeg Paths" to open Settings
 
 2. **Configure FFmpeg Paths** (if needed):
-   - Click the "Settings" button in the header
+   - Use the Settings panel to configure FFmpeg executable paths
    - The application will try to auto-detect FFmpeg executables
    - If auto-detection fails, manually set the paths to `ffmpeg` and `ffprobe` executables
    - Click "Save Settings" to store your configuration
 
-### Video Editing Workflow
+3. **Choose Your Mode**:
+   - **Editor**: Full-featured video editor with timeline and advanced controls
+   - **Tasks**: Quick processing for common operations like fades and audio extraction
 
-1. **Load a Video**: Click the "Load Video" button in the header to select a video file
-2. **Playback**: Use the Play/Pause button to control video playback
-3. **Scrub Timeline**: Click anywhere on the timeline to jump to that position
-4. **Set Clip Points**: 
+### Editor Mode Workflow
+
+1. **Load Video**: Click "Load Video" to select a video file from your computer
+2. **Single Video Editing**: 
+   - The video is loaded into the editor
+   - Use the timeline to navigate through the video
+   - Set in/out points to define your clip
+3. **Playback**: Use the Play/Pause button to control video playback
+4. **Scrub Timeline**: Click anywhere on the timeline to jump to that position
+5. **Set Clip Points**: 
    - Click "Set In Point" to mark the start of your clip
    - Click "Set Out Point" to mark the end of your clip
-   - The red region on the timeline shows your selected clip
-5. **Add Fade Effects**:
+   - The red region on the timeline shows your selected section
+6. **Add Fade Effects**:
    - Set fade-in duration (in seconds) to fade from black at the start
    - Set fade-out duration (in seconds) to fade to black at the end
-6. **Export**: Click "Export Video" to process and save your edited video
+7. **Export**: Click "Export" to process and save your edited video
+
+### Tasks Mode Workflow
+
+1. **Quick Fade**:
+   - Click "Start Quick Fade" to select a video file
+   - Choose output location and filename
+   - The app automatically applies 6-second fade in and 3-second fade out
+   - Processing starts immediately
+
+2. **Audio Rip**:
+   - Click "Start Audio Rip" to select a video file
+   - Choose output format (MP3, WAV, AAC) and location
+   - Audio is extracted with original quality preserved
 
 ### Keyboard Shortcuts
 
@@ -159,12 +195,11 @@ phedit/
 ## Future Enhancements
 
 This is a minimal implementation. Potential future features could include:
-- Multiple video tracks
+- Multiple video tracks and multi-clip editing (future enhancement)
 - Audio editing capabilities
 - More transition effects
 - Video filters and color correction
 - Batch processing
-- Keyboard shortcuts
 - Undo/Redo functionality
 - Project saving/loading
 

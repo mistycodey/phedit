@@ -1,26 +1,30 @@
 .help-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 8px; /* Account for body padding */
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
   background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
   padding: 20px;
+  border-radius: 8px;
+  overflow: hidden; /* Prevent content from extending beyond frame */
 }
 
 .help-modal {
-  background: white;
+  background: #2a2a2a;
+  border: 1px solid #3a3a3a;
   border-radius: 8px;
-  max-width: 800px;
-  max-height: 90vh;
+  max-width: calc(800px - 32px); /* Account for frame padding */
+  max-height: calc(90vh - 32px); /* Account for frame padding */
   width: 100%;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  margin: 16px; /* Add margin to prevent touching frame edges */
 }
 
 .help-header {
@@ -28,14 +32,14 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 1px solid #e0e0e0;
-  background: #f8f9fa;
+  border-bottom: 1px solid #3a3a3a;
+  background: #2a2a2a;
   border-radius: 8px 8px 0 0;
 }
 
 .help-header h2 {
   margin: 0;
-  color: #333;
+  color: #ffffff;
   font-size: 24px;
   font-weight: 600;
 }
@@ -45,7 +49,7 @@
   border: none;
   font-size: 28px;
   cursor: pointer;
-  color: #666;
+  color: #cccccc;
   padding: 0;
   width: 32px;
   height: 32px;
@@ -57,8 +61,8 @@
 }
 
 .help-close-btn:hover {
-  background-color: #e0e0e0;
-  color: #333;
+  background-color: #3a3a3a;
+  color: #ffffff;
 }
 
 .help-content {
@@ -81,16 +85,16 @@
 }
 
 .help-section h3 {
-  color: #2c3e50;
+  color: #ffffff;
   font-size: 20px;
   font-weight: 600;
   margin: 0 0 16px 0;
   padding-bottom: 8px;
-  border-bottom: 2px solid #3498db;
+  border-bottom: 2px solid #4a9eff;
 }
 
 .help-section h4 {
-  color: #34495e;
+  color: #ffffff;
   font-size: 16px;
   font-weight: 600;
   margin: 20px 0 12px 0;
@@ -98,7 +102,7 @@
 
 .help-section p {
   margin: 0 0 16px 0;
-  color: #555;
+  color: #cccccc;
 }
 
 .help-section ul,
@@ -109,7 +113,7 @@
 
 .help-section li {
   margin-bottom: 8px;
-  color: #555;
+  color: #cccccc;
 }
 
 .help-section ul li {
@@ -121,12 +125,12 @@
 }
 
 .help-section strong {
-  color: #2c3e50;
+  color: #ffffff;
   font-weight: 600;
 }
 
 .help-section a {
-  color: #3498db;
+  color: #4a9eff;
   text-decoration: none;
   font-weight: 500;
 }
@@ -136,24 +140,24 @@
 }
 
 .help-section code {
-  background-color: #f8f9fa;
+  background-color: #3a3a3a;
   padding: 2px 6px;
   border-radius: 4px;
   font-family: 'Courier New', monospace;
   font-size: 14px;
-  color: #e74c3c;
+  color: #4a9eff;
 }
 
 .help-section .tip {
-  background-color: #e8f4fd;
-  border-left: 4px solid #3498db;
+  background-color: #2a3a4a;
+  border-left: 4px solid #4a9eff;
   padding: 12px 16px;
   margin: 16px 0;
   border-radius: 0 4px 4px 0;
 }
 
 .help-section .note {
-  background-color: #fff3cd;
+  background-color: #4a4a2a;
   border-left: 4px solid #ffc107;
   padding: 12px 16px;
   margin: 16px 0;
@@ -167,7 +171,9 @@
   }
   
   .help-modal {
-    max-height: 95vh;
+    max-height: calc(95vh - 16px);
+    margin: 8px;
+    max-width: calc(100vw - 16px);
   }
   
   .help-header {
@@ -191,21 +197,4 @@
   }
 }
 
-/* Scrollbar styling */
-.help-content::-webkit-scrollbar {
-  width: 8px;
-}
 
-.help-content::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-.help-content::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
-}
-
-.help-content::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}

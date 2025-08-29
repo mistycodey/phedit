@@ -15,7 +15,7 @@ const Help = ({ isOpen, onClose }) => {
         <div className="help-content">
           <div className="help-section">
             <h3>Getting Started</h3>
-            <p>PHEdit is a simple video editing tool that lets you create clips from your videos with professional effects.</p>
+            <p>Video editing tool for creating edited videos with fade effects.</p>
             
             <h4>Step 1: Load a Video</h4>
             <ol>
@@ -44,16 +44,16 @@ const Help = ({ isOpen, onClose }) => {
               <li><strong>Set the end point</strong> by clicking the "Set Out Point" button (or press 'O')</li>
             </ol>
             
-            <p><strong>Tip:</strong> You can see your selected clip highlighted in blue on the timeline.</p>
+            <p><strong>Tip:</strong> You can see your selected section highlighted in blue on the timeline.</p>
           </div>
 
           <div className="help-section">
-            <h3>Adding Professional Effects</h3>
+            <h3>Adding Effects</h3>
             
             <h4>Fade Effects</h4>
             <ul>
-              <li><strong>Video Fade In:</strong> Creates a smooth fade from black at the start of your clip</li>
-              <li><strong>Video Fade Out:</strong> Creates a smooth fade to black at the end of your clip</li>
+              <li><strong>Video Fade In:</strong> Fade from black at the start of your clip</li>
+              <li><strong>Video Fade Out:</strong> Fade to black at the end of your clip</li>
               <li><strong>Audio Fade In:</strong> Gradually increases the volume at the start</li>
               <li><strong>Audio Fade Out:</strong> Gradually decreases the volume at the end</li>
             </ul>
@@ -105,12 +105,30 @@ const Help = ({ isOpen, onClose }) => {
 
           <div className="help-section">
             <h3>Keyboard Shortcuts</h3>
+            
+            <h4>Playback Control</h4>
             <ul>
               <li><strong>Spacebar:</strong> Play/Pause video</li>
               <li><strong>Left Arrow:</strong> Jump back 10 seconds</li>
               <li><strong>Right Arrow:</strong> Jump forward 10 seconds</li>
-              <li><strong>I:</strong> Set In Point</li>
-              <li><strong>O:</strong> Set Out Point</li>
+            </ul>
+            
+            <h4>In/Out Point Control</h4>
+            <ul>
+              <li><strong>I:</strong> Set In Point at current position</li>
+              <li><strong>O:</strong> Set Out Point at current position</li>
+              <li><strong>Shift + Left/Right:</strong> Nudge In Point by 0.1 seconds</li>
+              <li><strong>Shift + Up/Down:</strong> Nudge Out Point by 0.1 seconds</li>
+              <li><strong>Shift + Ctrl + Left/Right:</strong> Nudge In Point by 1 second</li>
+              <li><strong>Shift + Ctrl + Up/Down:</strong> Nudge Out Point by 1 second</li>
+            </ul>
+            
+            <h4>Timeline Interaction</h4>
+            <ul>
+              <li><strong>Click:</strong> Seek to position</li>
+              <li><strong>Drag handles:</strong> Adjust In/Out points directly</li>
+              <li><strong>Right-click:</strong> Context menu with quick actions</li>
+              <li><strong>Shift + Drag:</strong> Select range on timeline</li>
             </ul>
           </div>
 
@@ -163,7 +181,7 @@ const Help = ({ isOpen, onClose }) => {
             <h3>Tips for Best Results</h3>
             <ul>
               <li>Use high-quality source videos for the best output</li>
-              <li>Keep fade effects under 3 seconds for most clips</li>
+              <li>Keep fade effects under 3 seconds for most videos</li>
               <li>Use "High" quality for important projects</li>
               <li>Use "Medium" or "Low" quality for web sharing or quick previews</li>
               <li>Test your settings on a short clip first</li>

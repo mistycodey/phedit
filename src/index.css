@@ -8,6 +8,269 @@
   user-select: none;
 }
 
+/* Custom scrollbar system - thin, modern scrollbars */
+* {
+  scrollbar-width: thin; /* Firefox - thin scrollbars */
+  scrollbar-color: rgba(74, 158, 255, 0.3) transparent; /* Firefox - thumb and track colors */
+}
+
+/* Webkit scrollbars (Chrome, Safari, Edge) */
+*::-webkit-scrollbar {
+  width: 8px; /* Vertical scrollbar width */
+  height: 8px; /* Horizontal scrollbar height */
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent; /* Transparent track */
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(74, 158, 255, 0.3); /* Semi-transparent blue thumb */
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(74, 158, 255, 0.5); /* More visible on hover */
+}
+
+*::-webkit-scrollbar-thumb:active {
+  background: rgba(74, 158, 255, 0.7); /* Even more visible when dragging */
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent; /* Transparent corner */
+}
+
+/* Special scrollbar styling for specific containers */
+.controls-panel {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(74, 158, 255, 0.4) transparent;
+}
+
+.controls-panel::-webkit-scrollbar {
+  width: 6px; /* Slightly thinner for controls panel */
+}
+
+.controls-panel::-webkit-scrollbar-thumb {
+  background: rgba(74, 158, 255, 0.4);
+}
+
+.controls-panel::-webkit-scrollbar-thumb:hover {
+  background: rgba(74, 158, 255, 0.6);
+}
+
+.modal-content {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(74, 158, 255, 0.4) transparent;
+}
+
+.modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: rgba(74, 158, 255, 0.4);
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(74, 158, 255, 0.6);
+}
+
+.help-content {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(74, 158, 255, 0.4) transparent;
+}
+
+.help-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.help-content::-webkit-scrollbar-thumb {
+  background: rgba(74, 158, 255, 0.4);
+}
+
+.help-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(74, 158, 255, 0.6);
+}
+
+.startup-content {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(74, 158, 255, 0.4) transparent;
+}
+
+.startup-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.startup-content::-webkit-scrollbar-thumb {
+  background: rgba(74, 158, 255, 0.4);
+}
+
+.startup-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(74, 158, 255, 0.6);
+}
+
+/* Tasks screen scrollbar styling */
+.tasks-screen {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(74, 158, 255, 0.4) transparent;
+}
+
+.tasks-screen::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tasks-screen::-webkit-scrollbar-thumb {
+  background: rgba(74, 158, 255, 0.4);
+}
+
+.tasks-screen::-webkit-scrollbar-thumb:hover {
+  background: rgba(74, 158, 255, 0.6);
+}
+
+.task-steps-container {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(74, 158, 255, 0.4) transparent;
+}
+
+.task-steps-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.task-steps-container::-webkit-scrollbar-thumb {
+  background: rgba(74, 158, 255, 0.4);
+}
+
+.task-steps-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(74, 158, 255, 0.6);
+}
+
+.tasks-info {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(74, 158, 255, 0.4) transparent;
+}
+
+.tasks-info::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tasks-info::-webkit-scrollbar-thumb {
+  background: rgba(74, 158, 255, 0.4);
+}
+
+.tasks-info::-webkit-scrollbar-thumb:hover {
+  background: rgba(74, 158, 255, 0.6);
+}
+
+/* Ensure scrollbars are visible when content overflows */
+.controls-panel:not(:hover)::-webkit-scrollbar-thumb,
+.modal-content:not(:hover)::-webkit-scrollbar-thumb,
+.help-content:not(:hover)::-webkit-scrollbar-thumb,
+.startup-content:not(:hover)::-webkit-scrollbar-thumb {
+  background: rgba(74, 158, 255, 0.4); /* Always slightly visible */
+}
+
+/* Enhanced scrollbar for better touch/click targets */
+@media (pointer: coarse) {
+  *::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+  
+  *::-webkit-scrollbar-thumb {
+    background: rgba(74, 158, 255, 0.6);
+    border: 1px solid rgba(74, 158, 255, 0.3);
+  }
+}
+
+/* Force scrollbar visibility on small frames */
+@media (max-width: 600px), (max-height: 500px) {
+  .controls-panel::-webkit-scrollbar-thumb,
+  .modal-content::-webkit-scrollbar-thumb,
+  .help-content::-webkit-scrollbar-thumb,
+  .startup-content::-webkit-scrollbar-thumb {
+    background: rgba(74, 158, 255, 0.6) !important; /* Force visibility */
+  }
+}
+
+/* Ensure scrollbars are always visible when content overflows */
+.controls-panel[style*="overflow-y: auto"]::-webkit-scrollbar-thumb,
+.modal-content[style*="overflow-y: auto"]::-webkit-scrollbar-thumb,
+.help-content[style*="overflow-y: auto"]::-webkit-scrollbar-thumb,
+.startup-content[style*="overflow-y: auto"]::-webkit-scrollbar-thumb {
+  background: rgba(74, 158, 255, 0.5) !important;
+}
+
+/* Responsive scrollbar sizing for small frames */
+@media (max-width: 800px) {
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .controls-panel::-webkit-scrollbar,
+  .modal-content::-webkit-scrollbar,
+  .help-content::-webkit-scrollbar,
+  .startup-content::-webkit-scrollbar,
+  .tasks-screen::-webkit-scrollbar,
+  .task-steps-container::-webkit-scrollbar,
+  .tasks-info::-webkit-scrollbar {
+    width: 4px;
+  }
+}
+
+@media (max-height: 600px) {
+  *::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  
+  .controls-panel::-webkit-scrollbar,
+  .modal-content::-webkit-scrollbar,
+  .help-content::-webkit-scrollbar,
+  .startup-content::-webkit-scrollbar,
+  .tasks-screen::-webkit-scrollbar,
+  .task-steps-container::-webkit-scrollbar,
+  .tasks-info::-webkit-scrollbar {
+    width: 3px;
+  }
+}
+
+/* Additional improvements for very small frames */
+@media (max-width: 500px), (max-height: 400px) {
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  *::-webkit-scrollbar-thumb {
+    background: rgba(74, 158, 255, 0.6); /* Even more visible */
+    border-radius: 3px;
+  }
+  
+  .controls-panel::-webkit-scrollbar,
+  .modal-content::-webkit-scrollbar,
+  .help-content::-webkit-scrollbar,
+  .startup-content::-webkit-scrollbar,
+  .tasks-screen::-webkit-scrollbar,
+  .task-steps-container::-webkit-scrollbar,
+  .tasks-info::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .controls-panel::-webkit-scrollbar-thumb,
+  .modal-content::-webkit-scrollbar-thumb,
+  .help-content::-webkit-scrollbar-thumb,
+  .startup-content::-webkit-scrollbar-thumb,
+  .tasks-screen::-webkit-scrollbar-thumb,
+  .task-steps-container::-webkit-scrollbar-thumb,
+  .tasks-info::-webkit-scrollbar-thumb {
+    background: rgba(74, 158, 255, 0.7);
+  }
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
@@ -17,6 +280,9 @@ body {
   background-color: #1a1a1a;
   color: #ffffff;
   overflow: hidden;
+  /* Add padding to account for Electron frame */
+  padding: 8px;
+  height: 100vh;
 }
 
 code {
@@ -25,9 +291,12 @@ code {
 }
 
 .app {
-  height: 100vh;
+  height: calc(100vh - 16px); /* Account for body padding */
   display: flex;
   flex-direction: column;
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .app.no-video-loaded .controls-panel {
@@ -84,11 +353,13 @@ code {
 
 .header {
   background-color: #2a2a2a;
-  padding: 10px 20px;
+  padding: 12px 20px;
   border-bottom: 1px solid #3a3a3a;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex: 0 0 auto; /* Don't grow or shrink */
+  min-height: 60px; /* Ensure consistent header height */
 }
 
 .header-controls {
@@ -108,12 +379,13 @@ code {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-height: 0; /* Allow flex shrinking */
 }
 
 .video-container {
   flex: 1 1 auto; /* Allow growing and shrinking */
-  min-height: 200px; /* Minimum height for usability */
-  max-height: calc(100vh - 200px); /* Leave space for header and some controls */
+  min-height: 300px; /* Increased minimum height for better visibility */
+  max-height: calc(100vh - 400px); /* Leave more space for header, timeline, and controls */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -121,6 +393,10 @@ code {
   position: relative;
   width: 100%;
   overflow: hidden;
+  margin: 10px 0; /* Add some spacing */
+  /* Ensure video container is never covered by frame */
+  border-radius: 6px;
+  border: 1px solid #3a3a3a;
 }
 
 .video-player {
@@ -176,8 +452,8 @@ code {
   border-top: 1px solid #3a3a3a;
   flex: 0 0 auto; /* Don't grow, use natural height */
   overflow-y: auto; /* Allow scrolling if content is too tall */
-  min-height: 180px; /* Reduced minimum space for controls */
-  max-height: 45vh; /* Limit controls panel height */
+  min-height: 200px; /* Increased minimum space for controls */
+  max-height: 40vh; /* Limit controls panel height */
 }
 
 .control-section {
@@ -195,6 +471,37 @@ code {
   .controls-grid {
     grid-template-columns: 1fr;
     gap: 10px;
+  }
+  
+  .video-container {
+    min-height: 250px;
+    max-height: calc(100vh - 350px);
+  }
+  
+  .timeline {
+    min-height: 100px;
+  }
+  
+  .controls-panel {
+    min-height: 180px;
+    max-height: 35vh;
+  }
+}
+
+/* Ensure minimum window size for usability */
+@media (max-height: 600px) {
+  .video-container {
+    min-height: 200px;
+    max-height: calc(100vh - 300px);
+  }
+  
+  .timeline {
+    min-height: 80px;
+  }
+  
+  .controls-panel {
+    min-height: 150px;
+    max-height: 30vh;
   }
 }
 
@@ -290,6 +597,81 @@ code {
   min-width: 80px;
 }
 
+/* Better alignment for fade effects panel */
+.fade-effects-panel .input-group label,
+.video-start-effects-panel .input-group label {
+  min-width: 120px;
+  text-align: left;
+  font-weight: 500;
+}
+
+.fade-effects-panel .input-group,
+.video-start-effects-panel .input-group {
+  margin-bottom: 2px;
+}
+
+.fade-effects-panel .control-row,
+.video-start-effects-panel .control-row {
+  margin-bottom: 8px;
+}
+
+.fade-effects-panel .input-group input[type="number"],
+.video-start-effects-panel .input-group input[type="number"] {
+  width: 55px;
+  text-align: center;
+}
+
+.fade-effects-panel .status-text,
+.video-start-effects-panel .status-text {
+  color: #999;
+  font-size: 13px;
+  padding-left: 4px;
+}
+
+/* Grid layout for fade effects and video start effects */
+.fade-effects-panel,
+.video-start-effects-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Disabled state for audio-only export */
+.control-pane.disabled-for-audio {
+  opacity: 0.4;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.control-pane.disabled-for-audio h3 {
+  color: #666;
+}
+
+.control-pane.disabled-for-audio .input-group label {
+  color: #666;
+}
+
+.control-pane.disabled-for-audio .status-text {
+  color: #888;
+  font-style: italic;
+}
+
+.fade-effects-panel .control-row,
+.video-start-effects-panel .control-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+.fade-effects-panel .input-group,
+.video-start-effects-panel .input-group {
+  display: grid;
+  grid-template-columns: 120px 55px 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0;
+  padding-right: 15px;
+}
+
 .input-group input[type="number"] {
   background-color: #3a3a3a;
   border: 1px solid #555;
@@ -333,17 +715,23 @@ code {
 }
 
 .timeline {
-  margin: 20px 0;
+  margin: 15px 0;
   user-select: none;
+  padding: 15px 20px; /* Increased horizontal padding */
+  background-color: #2a2a2a;
+  border-radius: 6px;
+  border: 1px solid #3a3a3a;
+  flex: 0 0 auto; /* Don't grow or shrink */
+  min-height: 120px; /* Ensure timeline has enough space */
 }
 
 /* Main Timeline Track (Playback) */
 .timeline-main-track {
-  width: 100%;
+  width: calc(100% - 30px); /* Account for horizontal margins */
   height: 16px;
   position: relative;
   cursor: pointer;
-  margin: 8px 0;
+  margin: 8px 15px 12px 15px; /* Add horizontal padding and bottom margin */
   border-radius: 4px;
   background-color: rgba(255, 255, 255, 0.05);
   border: 1px solid #3a3a3a;
@@ -369,25 +757,54 @@ code {
   z-index: 2;
 }
 
-/* Clip Selection Track (Separate) */
+/* Video Trimming Track (Separate) */
 .timeline-clip-track {
-  width: 100%;
+  width: calc(100% - 30px); /* Account for horizontal margins */
   height: 20px;
   position: relative;
-  margin: 8px 0;
+  margin: 8px 15px 12px 15px; /* Add horizontal padding and bottom margin */
   border-radius: 4px;
   background-color: rgba(255, 255, 255, 0.02);
   border: 1px solid #2a2a2a;
   transition: background-color 0.2s ease;
+  pointer-events: auto; /* Ensure clip track can receive mouse events */
+  cursor: crosshair; /* Show crosshair cursor to indicate clickable area */
 }
 
 .timeline-clip-track:hover {
   background-color: rgba(255, 255, 255, 0.05);
+  border-color: #4a9eff;
 }
 
-.timeline-clip-track.dragging {
+.timeline-clip-track.active-mode {
   background-color: rgba(74, 158, 255, 0.1);
   border-color: #4a9eff;
+  cursor: crosshair;
+}
+
+.timeline-controls {
+  display: flex;
+  gap: 10px;
+  margin: 10px 15px;
+  justify-content: center;
+}
+
+.timeline-controls .btn {
+  padding: 8px 16px;
+  font-size: 12px;
+  min-width: 100px;
+}
+
+.in-point-handle.active {
+  background-color: #218838;
+  transform: translateX(-50%) scale(1.1);
+  box-shadow: 0 0 10px rgba(40, 167, 69, 0.6);
+}
+
+.out-point-handle.active {
+  background-color: #c82333;
+  transform: translateX(-50%) scale(1.1);
+  box-shadow: 0 0 10px rgba(220, 53, 69, 0.6);
 }
 
 .clip-track-background {
@@ -417,9 +834,9 @@ code {
   left: 4px;
   height: 4px;
   background: linear-gradient(90deg, 
-    rgba(40, 167, 69, 0.4) 0%, 
-    rgba(40, 167, 69, 0.3) 50%, 
-    rgba(220, 53, 69, 0.4) 100%
+    rgba(40, 167, 69, 0.6) 0%, 
+    rgba(40, 167, 69, 0.4) 50%, 
+    rgba(220, 53, 69, 0.6) 100%
   );
   border-left: 2px solid #28a745;
   border-right: 2px solid #dc3545;
@@ -481,6 +898,7 @@ code {
   justify-content: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   cursor: ew-resize;
+  z-index: 20; /* Higher z-index to ensure handles are on top */
 }
 
 .in-point-handle:hover {
@@ -505,6 +923,7 @@ code {
   justify-content: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   cursor: ew-resize;
+  z-index: 20; /* Higher z-index to ensure handles are on top */
 }
 
 .out-point-handle:hover {
@@ -529,7 +948,9 @@ code {
 .timeline-markers {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  margin-left: 15px;
+  margin-right: 15px;
   font-size: 12px;
   color: #999;
 }
@@ -575,20 +996,22 @@ code {
 .timeline-info {
   display: flex;
   gap: 20px;
-  margin-top: 10px;
+  margin: 15px 15px 0 15px; /* Increased top margin */
   flex-wrap: wrap;
 }
 
 .timeline-info-section {
   display: flex;
-  align-items: center;
+  align-items: baseline; /* Use baseline alignment instead of center */
   gap: 5px;
+  min-height: 20px; /* Ensure consistent height */
 }
 
 .info-label {
   font-size: 12px;
   color: #999;
   font-weight: 500;
+  line-height: 16px; /* Consistent line height */
 }
 
 .info-value {
@@ -596,10 +1019,43 @@ code {
   color: #4a9eff;
   font-weight: bold;
   font-family: 'Courier New', monospace;
+  line-height: 16px; /* Consistent line height */
+}
+
+.clickable-time {
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 3px;
+  transition: background-color 0.2s ease;
+  line-height: 16px; /* Match other elements */
+}
+
+.clickable-time:hover {
+  background-color: rgba(74, 158, 255, 0.1);
+  color: #4a9eff;
+}
+
+.time-input {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  font-weight: bold;
+  color: #333;
+  background-color: #fff;
+  border: 2px solid #4a9eff;
+  border-radius: 3px;
+  padding: 2px 4px;
+  width: 120px;
+  line-height: 16px; /* Match other elements */
+  outline: none;
+}
+
+.time-input:focus {
+  border-color: #218838;
+  box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2);
 }
 
 .timeline-instructions {
-  margin-top: 8px;
+  margin: 12px 15px 0 15px; /* Increased top margin */
   text-align: center;
 }
 
@@ -607,6 +1063,222 @@ code {
   font-size: 11px;
   color: #666;
   font-style: italic;
+}
+
+/* Context Menu */
+.timeline-context-menu {
+  background-color: #2a2a2a;
+  border: 1px solid #4a4a4a;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  padding: 4px 0;
+  min-width: 150px;
+  font-size: 12px;
+}
+
+.context-menu-header {
+  padding: 8px 12px;
+  color: #4a9eff;
+  font-weight: bold;
+  font-size: 11px;
+  border-bottom: 1px solid #3a3a3a;
+  margin-bottom: 4px;
+}
+
+.context-menu-item {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  color: #ccc;
+  text-align: left;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.15s ease;
+}
+
+.context-menu-item:hover {
+  background-color: #4a9eff;
+  color: #fff;
+}
+
+/* Enhanced Timeline Controls */
+.timeline-controls {
+  display: flex;
+  gap: 8px;
+  margin: 10px 15px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.timeline-extend-controls {
+  display: flex;
+  gap: 4px;
+  margin-left: 8px;
+}
+
+.btn-xs {
+  padding: 4px 8px;
+  font-size: 10px;
+  min-width: auto;
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 1px solid #4a4a4a;
+  color: #ccc;
+}
+
+.btn-outline:hover {
+  background-color: #4a4a4a;
+  border-color: #666;
+}
+
+/* Always visible and draggable handles */
+.timeline-handle {
+  opacity: 1;
+  cursor: ew-resize;
+}
+
+.timeline-handle:hover {
+  transform: translateX(-50%) scale(1.1);
+  box-shadow: 0 0 8px rgba(74, 158, 255, 0.4);
+}
+
+.in-point-handle {
+  background-color: #28a745;
+}
+
+.in-point-handle:hover {
+  background-color: #218838;
+}
+
+.out-point-handle {
+  background-color: #dc3545;
+}
+
+.out-point-handle:hover {
+  background-color: #c82333;
+}
+
+/* Remove active mode styling since handles are always active */
+.timeline-clip-track {
+  cursor: crosshair;
+}
+
+.timeline-clip-track:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: #4a9eff;
+}
+
+/* Range selection visual feedback */
+.timeline-clip-track.range-selecting {
+  background-color: rgba(74, 158, 255, 0.15);
+  border-color: #4a9eff;
+}
+
+/* Preview Clip Active State */
+.preview-active {
+  background-color: #4a9eff !important;
+  border-color: #4a9eff !important;
+  color: #fff !important;
+  box-shadow: 0 0 8px rgba(74, 158, 255, 0.4);
+  animation: preview-pulse 2s ease-in-out infinite;
+}
+
+.preview-active:hover {
+  background-color: #357abd !important;
+  border-color: #357abd !important;
+  transform: none; /* Disable normal hover transform */
+}
+
+.preview-indicator {
+  color: #ff4444;
+  font-size: 14px;
+  margin-right: 4px;
+  animation: preview-blink 1.5s ease-in-out infinite;
+}
+
+@keyframes preview-pulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(74, 158, 255, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(74, 158, 255, 0.6);
+  }
+}
+
+@keyframes preview-blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0.3;
+  }
+}
+
+/* Preview Mode Indicator in Instructions */
+.preview-mode-indicator {
+  color: #4a9eff;
+  font-weight: bold;
+  margin-left: 8px;
+}
+
+.preview-dot {
+  color: #ff4444;
+  margin-right: 4px;
+  animation: preview-blink 1.5s ease-in-out infinite;
+}
+
+/* Button Playhead Icon */
+.button-playhead-icon {
+  display: inline-block;
+  position: relative;
+  width: 12px;
+  height: 8px;
+  background-color: #4a9eff;
+  border: 1px solid #fff;
+  border-radius: 2px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.button-playhead-icon::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
+  border-top: 4px solid #4a9eff;
+}
+
+/* Button Play Icon */
+.button-play-icon {
+  display: inline-block;
+  margin-right: 6px;
+  color: #4a9eff;
+  font-size: 12px;
+  vertical-align: middle;
+}
+
+/* Button Reset Icon */
+.button-reset-icon {
+  display: inline-block;
+  margin-right: 6px;
+  color: #999;
+  font-size: 14px;
+  vertical-align: middle;
+  font-weight: bold;
+}
+
+.btn:hover .button-reset-icon {
+  color: #ccc;
 }
 
 .progress-bar {
@@ -643,24 +1315,27 @@ code {
 /* Modal Styles */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 8px; /* Account for body padding */
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
   background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  border-radius: 8px;
+  overflow: hidden; /* Prevent content from extending beyond frame */
 }
 
 .modal-content {
   background-color: #2a2a2a;
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-  max-width: 90vw;
-  max-height: 90vh;
+  max-width: calc(90vw - 32px); /* Account for frame padding */
+  max-height: calc(90vh - 32px); /* Account for frame padding */
   overflow-y: auto;
+  margin: 16px; /* Add margin to prevent touching frame edges */
 }
 
 .settings-modal {
@@ -903,16 +1578,18 @@ code {
 /* Export Progress Overlay */
 .export-progress-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 8px; /* Account for body padding */
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
   background-color: rgba(0, 0, 0, 0.9);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2000;
   backdrop-filter: blur(5px);
+  border-radius: 8px;
+  overflow: hidden; /* Prevent content from extending beyond frame */
 }
 
 .export-progress-container {
@@ -924,6 +1601,7 @@ code {
   max-width: 500px;
   width: 90%;
   text-align: center;
+  margin: 20px; /* Add margin to prevent touching frame edges */
 }
 
 .export-progress-title {
@@ -1066,6 +1744,8 @@ code {
   padding: 8px 12px;
   font-size: 12px;
   z-index: 5;
+  /* Ensure file info is never covered by frame */
+  margin-bottom: 8px;
 }
 
 .file-name {
@@ -1103,7 +1783,8 @@ code {
 /* Info Modal Styles */
 .info-modal {
   width: 400px;
-  max-width: 90vw;
+  max-width: calc(90vw - 32px); /* Account for frame padding */
+  margin: 16px; /* Add margin to prevent touching frame edges */
 }
 
 .info-modal-header {
@@ -1166,7 +1847,8 @@ code {
 /* Confirm Modal Styles */
 .confirm-modal {
   width: 450px;
-  max-width: 90vw;
+  max-width: calc(90vw - 32px); /* Account for frame padding */
+  margin: 16px; /* Add margin to prevent touching frame edges */
 }
 
 .confirm-modal-header {
@@ -1222,7 +1904,8 @@ code {
 /* Session Restore Modal Styles */
 .session-restore-modal {
   width: 600px;
-  max-width: 90vw;
+  max-width: calc(90vw - 32px); /* Account for frame padding */
+  margin: 16px; /* Add margin to prevent touching frame edges */
 }
 
 .restore-description {
