@@ -1,6 +1,6 @@
 import React, { useRef, useState, useCallback } from 'react';
 
-const Timeline = ({ currentTime, duration, inPoint, outPoint, onSeek, onSetInPoint, onSetOutPoint, formatTime, hasVideo = false, onPreviewClip, isPreviewMode = false }) => {
+const Timeline = ({ currentTime, duration, inPoint, outPoint, onSeek, onSetInPoint, onSetOutPoint, formatTime, hasVideo = false, onPreviewClip, isPreviewMode = false, onMousePositionUpdate }) => {
   const timelineRef = useRef(null);
   const clipTrackRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -94,8 +94,16 @@ const Timeline = ({ currentTime, duration, inPoint, outPoint, onSeek, onSetInPoi
           time: time,
           type: 'hover'
         });
+        // Update mouse position for keyboard shortcuts
+        if (onMousePositionUpdate) {
+          onMousePositionUpdate(time);
+        }
       } else {
         setShowTooltip({ show: false, x: 0, time: 0, type: '' });
+        // Clear mouse position when not over timeline
+        if (onMousePositionUpdate) {
+          onMousePositionUpdate(null);
+        }
       }
     }
     
@@ -152,7 +160,7 @@ const Timeline = ({ currentTime, duration, inPoint, outPoint, onSeek, onSetInPoi
         });
       }
     }
-  }, [isDragging, isRangeSelecting, dragType, dragStartX, dragStartValue, duration, getTrackWidth, onSeek, onSetInPoint, onSetOutPoint, inPoint, outPoint, getTimeFromPosition, rangeStart]);
+  }, [isDragging, isRangeSelecting, dragType, dragStartX, dragStartValue, duration, getTrackWidth, onSeek, onSetInPoint, onSetOutPoint, inPoint, outPoint, getTimeFromPosition, rangeStart, onMousePositionUpdate]);
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
@@ -165,7 +173,11 @@ const Timeline = ({ currentTime, duration, inPoint, outPoint, onSeek, onSetInPoi
 
   const handleMouseLeave = useCallback(() => {
     setShowTooltip({ show: false, x: 0, time: 0, type: '' });
-  }, []);
+    // Clear mouse position when mouse leaves the timeline
+    if (onMousePositionUpdate) {
+      onMousePositionUpdate(null);
+    }
+  }, [onMousePositionUpdate]);
   
   const handleContextMenu = useCallback((e) => {
     if (!hasVideo) return;
@@ -331,7 +343,7 @@ const Timeline = ({ currentTime, duration, inPoint, outPoint, onSeek, onSetInPoi
   const progressPercentage = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
-    <div className="timeline">
+    <div className="timeline" onMouseLeave={handleMouseLeave}>
       <div className="timeline-markers">
         <span>0:00</span>
         <span>{formatTime(duration)}</span>

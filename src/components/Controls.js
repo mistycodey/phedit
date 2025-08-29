@@ -37,7 +37,8 @@ const Controls = ({
   duration,
   onSeek,
   onPreviewClip,
-  isPreviewMode
+  isPreviewMode,
+  onMousePositionUpdate
 }) => {
   const clipDuration = outPoint - inPoint;
   const maxFadeIn = clipDuration / 2;
@@ -61,6 +62,7 @@ const Controls = ({
           hasVideo={hasVideo}
           onPreviewClip={onPreviewClip}
           isPreviewMode={isPreviewMode}
+          onMousePositionUpdate={onMousePositionUpdate}
         />
       </div>
 

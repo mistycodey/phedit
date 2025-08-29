@@ -50,6 +50,7 @@ function App() {
   const [sessionRestoreModal, setSessionRestoreModal] = useState({ isOpen: false, sessionState: null });
   const [showHelp, setShowHelp] = useState(false);
   const [isRestoringSession, setIsRestoringSession] = useState(false);
+  const [mouseTimelinePosition, setMouseTimelinePosition] = useState(null);
 
   const videoRef = useRef(null);
 
@@ -219,12 +220,14 @@ function App() {
         case 'i':
         case 'I':
           event.preventDefault();
-          handleSetInPoint();
+          // Use mouse position if available, otherwise use current time
+          handleSetInPoint(mouseTimelinePosition !== null ? mouseTimelinePosition : currentTime);
           break;
         case 'o':
         case 'O':
           event.preventDefault();
-          handleSetOutPoint();
+          // Use mouse position if available, otherwise use current time
+          handleSetOutPoint(mouseTimelinePosition !== null ? mouseTimelinePosition : currentTime);
           break;
         case 'ArrowUp':
           if (event.shiftKey && event.ctrlKey) {
@@ -341,6 +344,10 @@ function App() {
 
   const handleSetOutPoint = (time = currentTime) => {
     setOutPoint(time);
+  };
+
+  const handleMousePositionUpdate = (position) => {
+    setMouseTimelinePosition(position);
   };
   
 
@@ -715,6 +722,7 @@ function App() {
             onSeek={handleSeek}
             onPreviewClip={handlePreviewClip}
             isPreviewMode={isPreviewMode}
+            onMousePositionUpdate={handleMousePositionUpdate}
           />
         </div>
       </div>
