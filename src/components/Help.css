@@ -1,26 +1,29 @@
 .help-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 8px; /* Account for body padding */
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
   background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
   padding: 20px;
+  border-radius: 8px;
+  overflow: hidden; /* Prevent content from extending beyond frame */
 }
 
 .help-modal {
   background: white;
   border-radius: 8px;
-  max-width: 800px;
-  max-height: 90vh;
+  max-width: calc(800px - 32px); /* Account for frame padding */
+  max-height: calc(90vh - 32px); /* Account for frame padding */
   width: 100%;
   display: flex;
   flex-direction: column;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  margin: 16px; /* Add margin to prevent touching frame edges */
 }
 
 .help-header {
@@ -167,7 +170,9 @@
   }
   
   .help-modal {
-    max-height: 95vh;
+    max-height: calc(95vh - 16px);
+    margin: 8px;
+    max-width: calc(100vw - 16px);
   }
   
   .help-header {
@@ -191,21 +196,4 @@
   }
 }
 
-/* Scrollbar styling */
-.help-content::-webkit-scrollbar {
-  width: 8px;
-}
 
-.help-content::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-.help-content::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
-}
-
-.help-content::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}

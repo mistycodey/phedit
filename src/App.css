@@ -5,3 +5,486 @@
   flex-direction: column;
   background-color: #1a1a1a;
 }
+
+/* Startup Screen Styles */
+.startup-screen {
+  position: fixed;
+  top: 8px; /* Account for body padding */
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  border-radius: 8px;
+  overflow: hidden; /* Prevent content from extending beyond frame */
+}
+
+.startup-content {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  max-width: 800px;
+  width: 90%;
+  max-height: calc(100vh - 100px); /* Account for frame and padding */
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  overflow-y: auto; /* Allow scrolling if content is too tall */
+  margin: 20px; /* Add margin to prevent touching frame edges */
+}
+
+.startup-icon {
+  font-size: 3.5rem;
+  margin-bottom: 15px;
+}
+
+.loading-spinner {
+  font-size: 3rem;
+  animation: spin 2s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.startup-content h1 {
+  color: #333;
+  margin-bottom: 8px;
+  font-size: 2.2rem;
+}
+
+.startup-content h2 {
+  color: #333;
+  margin-bottom: 8px;
+  font-size: 1.8rem;
+}
+
+.startup-content p {
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 1rem;
+}
+
+.startup-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.mode-selection {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 25px;
+  margin: 25px 0;
+}
+
+.mode-card {
+  background: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 15px;
+  padding: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.mode-card:hover {
+  border-color: #667eea;
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
+}
+
+.mode-icon {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.mode-card h3 {
+  color: #333;
+  margin-bottom: 12px;
+  font-size: 1.3rem;
+  text-align: center;
+}
+
+.mode-card p {
+  color: #666;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.mode-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.mode-card li {
+  padding: 6px 0;
+  color: #555;
+  position: relative;
+  padding-left: 25px;
+}
+
+.mode-card li:before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #28a745;
+  font-weight: bold;
+}
+
+.startup-footer {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #e9ecef;
+}
+
+.ffmpeg-info {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 15px;
+  margin-top: 15px;
+  text-align: left;
+}
+
+.ffmpeg-info h4 {
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.ffmpeg-info ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ffmpeg-info li {
+  padding: 5px 0;
+  color: #666;
+  position: relative;
+  padding-left: 20px;
+}
+
+.ffmpeg-info li:before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #667eea;
+}
+
+.ffmpeg-info a {
+  color: #667eea;
+  text-decoration: none;
+}
+
+.ffmpeg-info a:hover {
+  text-decoration: underline;
+}
+
+/* Tasks Screen Styles */
+.tasks-screen {
+  height: calc(100vh - 16px); /* Fixed height instead of min-height */
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 20px;
+  border-radius: 8px;
+  overflow-y: auto; /* Enable vertical scrolling */
+  margin: 8px; /* Add margin to prevent touching frame edges */
+}
+
+.tasks-header {
+  text-align: center;
+  margin-bottom: 40px;
+  position: relative;
+}
+
+.tasks-header button {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.tasks-header h1 {
+  color: #333;
+  margin: 20px 0 10px 0;
+  font-size: 2.5rem;
+}
+
+.tasks-header p {
+  color: #666;
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.tasks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto 40px auto;
+}
+
+.task-card {
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.task-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+  border-color: #667eea;
+}
+
+.task-icon {
+  font-size: 3rem;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.task-card h3 {
+  color: #333;
+  margin-bottom: 15px;
+  font-size: 1.8rem;
+  text-align: center;
+}
+
+.task-card > p {
+  color: #666;
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.task-details {
+  margin-bottom: 25px;
+}
+
+.task-details ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.task-details li {
+  padding: 8px 0;
+  color: #555;
+  position: relative;
+  padding-left: 25px;
+}
+
+.task-details li:before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #28a745;
+  font-weight: bold;
+}
+
+.task-action {
+  text-align: center;
+}
+
+.task-action button {
+  width: 100%;
+  padding: 15px;
+  font-size: 1.1rem;
+}
+
+.tasks-info {
+  background: white;
+  border-radius: 15px;
+  padding: 25px;
+  max-width: 800px;
+  margin: 0 auto;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  overflow-y: auto; /* Enable vertical scrolling */
+  max-height: 50vh; /* Limit height to enable scrolling */
+}
+
+.tasks-info h4 {
+  color: #333;
+  margin-bottom: 15px;
+  font-size: 1.3rem;
+}
+
+.tasks-info p {
+  color: #666;
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+
+/* Task Steps Styles */
+.task-steps-container {
+  background: white;
+  border-radius: 15px;
+  padding: 25px;
+  margin: 0 auto 30px auto;
+  max-width: 600px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  overflow-y: auto; /* Enable vertical scrolling */
+  max-height: 50vh; /* Limit height to enable scrolling */
+}
+
+.task-steps-header h3 {
+  color: #333;
+  margin: 0 0 20px 0;
+  text-align: center;
+  font-size: 1.3rem;
+}
+
+.task-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.task-step {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  border-radius: 10px;
+  background: #f8f9fa;
+  border: 2px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.task-step.current {
+  border-color: #667eea;
+  background: #f0f4ff;
+}
+
+.task-step.completed {
+  border-color: #28a745;
+  background: #f8fff9;
+}
+
+.step-number {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+  background: #6c757d;
+  color: white;
+  flex-shrink: 0;
+}
+
+.task-step.current .step-number {
+  background: #667eea;
+}
+
+.task-step.completed .step-number {
+  background: #28a745;
+}
+
+.step-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.step-text {
+  color: #333;
+  font-weight: 500;
+}
+
+.task-step.completed .step-text {
+  color: #28a745;
+}
+
+.step-details {
+  color: #666;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.task-step.completed .step-details {
+  color: #28a745;
+}
+
+.step-action {
+  flex-shrink: 0;
+}
+
+.step-action .btn-sm {
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  min-width: 80px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .startup-content {
+    padding: 20px;
+    margin: 20px;
+  }
+  
+  .mode-selection {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .tasks-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .tasks-header button {
+    position: static;
+    transform: none;
+    margin-bottom: 20px;
+  }
+  
+  .task-card {
+    padding: 20px;
+  }
+
+  .task-steps-container {
+    margin: 0 20px 30px 20px;
+    padding: 20px;
+    max-height: 40vh; /* Smaller max height on mobile */
+  }
+  
+  .tasks-info {
+    margin: 0 20px;
+    max-height: 50vh; /* Smaller max height on mobile */
+  }
+  
+  /* Adjust modal spacing for smaller screens */
+  .modal-content,
+  .info-modal,
+  .confirm-modal,
+  .session-restore-modal {
+    margin: 8px;
+    max-width: calc(100vw - 16px);
+    max-height: calc(100vh - 16px);
+  }
+  
+  .help-modal {
+    margin: 8px;
+    max-width: calc(100vw - 16px);
+    max-height: calc(100vh - 16px);
+  }
+  
+  .export-progress-container {
+    margin: 10px;
+    padding: 20px;
+  }
+}

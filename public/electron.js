@@ -17,8 +17,8 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
-    minWidth: 600,
-    minHeight: 500,
+    minWidth: 800, /* Increased minimum width for better layout */
+    minHeight: 600, /* Increased minimum height to ensure all UI elements are visible */
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -73,8 +73,8 @@ app.on('activate', () => {
 });
 
 // IPC handlers for file operations
-ipcMain.handle('open-file-dialog', async () => {
-  const result = await dialog.showOpenDialog(mainWindow, {
+ipcMain.handle('open-file-dialog', async (event, options = {}) => {
+  const defaultOptions = {
     properties: ['openFile'],
     filters: [
       {
@@ -82,13 +82,18 @@ ipcMain.handle('open-file-dialog', async () => {
         extensions: ['mp4', 'avi', 'mov', 'mkv', 'webm', 'flv', 'm4v']
       }
     ]
+  };
+
+  const result = await dialog.showOpenDialog(mainWindow, {
+    ...defaultOptions,
+    ...options
   });
 
   return result;
 });
 
-ipcMain.handle('save-file-dialog', async (event, exportType = 'video') => {
-  const filters = exportType === 'audio' 
+ipcMain.handle('save-file-dialog', async (event, exportType = 'video', options = {}) => {
+  const defaultFilters = exportType === 'audio' 
     ? [
         {
           name: 'WAV Audio',
@@ -113,11 +118,16 @@ ipcMain.handle('save-file-dialog', async (event, exportType = 'video') => {
   const defaultExtension = exportType === 'audio' ? '.wav' : '.mp4';
   const defaultName = exportType === 'audio' ? 'audio-clip' : 'video-clip';
 
-  const result = await dialog.showSaveDialog(mainWindow, {
+  const defaultOptions = {
     title: `Save ${exportType === 'audio' ? 'Audio' : 'Video'} File`,
-    filters: filters,
+    filters: defaultFilters,
     defaultPath: defaultName + defaultExtension,
     properties: ['createDirectory']
+  };
+
+  const result = await dialog.showSaveDialog(mainWindow, {
+    ...defaultOptions,
+    ...options
   });
 
   console.log('Save dialog result:', result);
@@ -205,7 +215,30 @@ ipcMain.handle('select-executable-path', async (event, title = 'Select FFmpeg Ex
 
 // FFmpeg processing
 ipcMain.handle('process-video', async (event, options) => {
-  const { inputPath, outputPath, startTime, duration, fadeIn, fadeOut, audioFadeIn, audioFadeOut, silenceAtStart = 0, blackScreenAtStart = 0, exportQuality = 'high', exportSize = 100, exportType = 'video' } = options;
+  console.log('Raw options received:', options);
+  const { inputPath, outputPath, startTime, duration, inPoint, outPoint, fadeIn, fadeOut, audioFadeIn, audioFadeOut, silenceAtStart = 0, blackScreenAtStart = 0, exportQuality = 'high', exportSize = 100, exportType = 'video' } = options;
+  
+  // Convert inPoint/outPoint to startTime/duration if provided
+  let actualStartTime = startTime;
+  let actualDuration = duration;
+  
+  console.log('Destructured values:', { inPoint, outPoint, startTime, duration });
+  
+  // Try to get inPoint and outPoint from options directly if destructuring failed
+  const directInPoint = options.inPoint;
+  const directOutPoint = options.outPoint;
+  console.log('Direct access values:', { directInPoint, directOutPoint });
+  
+  if ((inPoint !== undefined && outPoint !== undefined) || (directInPoint !== undefined && directOutPoint !== undefined)) {
+    const finalInPoint = inPoint !== undefined ? inPoint : directInPoint;
+    const finalOutPoint = outPoint !== undefined ? outPoint : directOutPoint;
+    
+    actualStartTime = finalInPoint;
+    actualDuration = finalOutPoint - finalInPoint;
+    console.log('Converted inPoint/outPoint to startTime/duration:', { finalInPoint, finalOutPoint, actualStartTime, actualDuration });
+  } else {
+    console.log('inPoint or outPoint is undefined, using original startTime/duration');
+  }
   const ffmpegPaths = configManager.getFFmpegPaths();
   
   console.log('Processing video with options:', {
@@ -213,6 +246,10 @@ ipcMain.handle('process-video', async (event, options) => {
     outputPath,
     startTime,
     duration,
+    inPoint,
+    outPoint,
+    actualStartTime,
+    actualDuration,
     fadeIn,
     fadeOut,
     audioFadeIn,
@@ -224,6 +261,12 @@ ipcMain.handle('process-video', async (event, options) => {
     exportType
   });
   
+  console.log('All options keys:', Object.keys(options));
+  console.log('inPoint type and value:', typeof inPoint, inPoint);
+  console.log('outPoint type and value:', typeof outPoint, outPoint);
+  console.log('Direct access to inPoint:', options.inPoint);
+  console.log('Direct access to outPoint:', options.outPoint);
+  
   // Validate paths
   if (!inputPath) {
     throw new Error('Input path is required');
@@ -232,7 +275,7 @@ ipcMain.handle('process-video', async (event, options) => {
     throw new Error('Output path is required');
   }
   
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     try {
       let command = ffmpeg(inputPath);
       
@@ -244,14 +287,43 @@ ipcMain.handle('process-video', async (event, options) => {
         command.setFfprobePath(ffmpegPaths.ffprobePath);
       }
     
-         // Set start time and duration if clipping
-     if (startTime !== undefined && startTime > 0) {
-       command = command.seekInput(startTime);
-     }
-     
-     if (duration !== undefined && duration > 0) {
-       command = command.duration(duration);
-     }
+      // Get video duration for fade calculations
+      let videoDuration = actualDuration;
+      if ((fadeOut > 0 || audioFadeOut > 0) && (actualDuration === undefined || actualDuration <= 0)) {
+        try {
+          const metadata = await new Promise((resolve, reject) => {
+            ffmpeg.ffprobe(inputPath, (err, metadata) => {
+              if (err) reject(err);
+              else resolve(metadata);
+            });
+          });
+          videoDuration = metadata.format.duration;
+          console.log('Retrieved full video duration for fade calculations:', videoDuration);
+        } catch (error) {
+          console.warn('Could not get video duration, fade out effects may not work correctly:', error.message);
+          // If we can't get duration, disable fade out effects
+          fadeOut = 0;
+          audioFadeOut = 0;
+        }
+      }
+      
+      // Ensure videoDuration is set for fade calculations
+      if (videoDuration === undefined || videoDuration <= 0) {
+        console.warn('No valid duration available for fade calculations, disabling fade out effects');
+        fadeOut = 0;
+        audioFadeOut = 0;
+      } else {
+        console.log('Using duration for fade calculations:', videoDuration);
+      }
+    
+      // Set start time and duration if clipping
+      if (actualStartTime !== undefined && actualStartTime > 0) {
+        command = command.seekInput(actualStartTime);
+      }
+      
+      if (actualDuration !== undefined && actualDuration > 0) {
+        command = command.duration(actualDuration);
+      }
      
      // Configure video quality and size settings
      if (exportType === 'video') {
@@ -289,8 +361,10 @@ ipcMain.handle('process-video', async (event, options) => {
         const fadeStartTime = silenceAtStart;
         audioFilters.push(`afade=t=in:st=${fadeStartTime}:d=${audioFadeIn}`);
       }
-      if (audioFadeOut > 0) {
-        audioFilters.push(`afade=t=out:st=${duration - audioFadeOut}:d=${audioFadeOut}`);
+      if (audioFadeOut > 0 && videoDuration) {
+        const fadeOutStart = videoDuration - audioFadeOut;
+        console.log('Audio fade out calculation (audio export):', { videoDuration, audioFadeOut, fadeOutStart });
+        audioFilters.push(`afade=t=out:st=${fadeOutStart}:d=${audioFadeOut}`);
       }
       
       if (audioFilters.length > 0) {
@@ -309,17 +383,21 @@ ipcMain.handle('process-video', async (event, options) => {
          if (fadeIn > 0) {
            videoFilters.push(`fade=t=in:st=${blackScreenAtStart}:d=${fadeIn}`);
          }
-         if (fadeOut > 0) {
-           videoFilters.push(`fade=t=out:st=${blackScreenAtStart + duration - fadeOut}:d=${fadeOut}`);
-         }
+                 if (fadeOut > 0 && videoDuration) {
+          const fadeOutStart = blackScreenAtStart + videoDuration - fadeOut;
+          console.log('Video fade out calculation (with black screen):', { blackScreenAtStart, videoDuration, fadeOut, fadeOutStart });
+          videoFilters.push(`fade=t=out:st=${fadeOutStart}:d=${fadeOut}`);
+        }
        } else {
          // Add fade effects without black screen
          if (fadeIn > 0) {
            videoFilters.push(`fade=t=in:st=0:d=${fadeIn}`);
          }
-         if (fadeOut > 0) {
-           videoFilters.push(`fade=t=out:st=${duration - fadeOut}:d=${fadeOut}`);
-         }
+                 if (fadeOut > 0 && videoDuration) {
+          const fadeOutStart = videoDuration - fadeOut;
+          console.log('Video fade out calculation (no black screen):', { videoDuration, fadeOut, fadeOutStart });
+          videoFilters.push(`fade=t=out:st=${fadeOutStart}:d=${fadeOut}`);
+        }
        }
        
        // Add video scaling if not 100%
@@ -342,8 +420,10 @@ ipcMain.handle('process-video', async (event, options) => {
         const fadeStartTime = silenceAtStart;
         audioFilters.push(`afade=t=in:st=${fadeStartTime}:d=${audioFadeIn}`);
       }
-      if (audioFadeOut > 0) {
-        audioFilters.push(`afade=t=out:st=${duration - audioFadeOut}:d=${audioFadeOut}`);
+      if (audioFadeOut > 0 && videoDuration) {
+        const fadeOutStart = videoDuration - audioFadeOut;
+        console.log('Audio fade out calculation (video export):', { videoDuration, audioFadeOut, fadeOutStart });
+        audioFilters.push(`afade=t=out:st=${fadeOutStart}:d=${audioFadeOut}`);
       }
       
       // Add audio delay for black screen if specified
@@ -410,5 +490,224 @@ ipcMain.handle('get-video-info', async (event, filePath) => {
         resolve(metadata);
       }
     });
+  });
+});
+
+// Check FFmpeg status
+ipcMain.handle('check-ffmpeg-status', async () => {
+  try {
+    const ffmpegPaths = configManager.getFFmpegPaths();
+    
+    // Check if FFmpeg is available
+    const ffmpegValid = await configManager.validateFFmpegPath(ffmpegPaths.ffmpegPath || 'ffmpeg');
+    const ffprobeValid = await configManager.validateFFmpegPath(ffmpegPaths.ffprobePath || 'ffprobe');
+    
+    if (ffmpegValid && ffprobeValid) {
+      return 'installed';
+    } else {
+      return 'not-installed';
+    }
+  } catch (error) {
+    console.error('Error checking FFmpeg status:', error);
+    return 'not-installed';
+  }
+});
+
+// Open external link
+ipcMain.handle('open-external-link', async (event, url) => {
+  try {
+    await shell.openExternal(url);
+    return true;
+  } catch (error) {
+    console.error('Error opening external link:', error);
+    throw error;
+  }
+});
+
+// Quick fade processing
+ipcMain.handle('process-quick-fade', async (event, options) => {
+  const { inputPath, outputPath, fadeSettings } = options;
+  const ffmpegPaths = configManager.getFFmpegPaths();
+  
+  console.log('Processing quick fade with options:', {
+    inputPath,
+    outputPath,
+    fadeSettings
+  });
+  
+  if (!inputPath || !outputPath) {
+    throw new Error('Input and output paths are required');
+  }
+  
+  return new Promise((resolve, reject) => {
+    try {
+      let command = ffmpeg(inputPath);
+      
+      // Set FFmpeg and FFprobe paths
+      if (ffmpegPaths.ffmpegPath && ffmpegPaths.ffmpegPath !== 'ffmpeg') {
+        command.setFfmpegPath(ffmpegPaths.ffmpegPath);
+      }
+      if (ffmpegPaths.ffprobePath && ffmpegPaths.ffprobePath !== 'ffprobe') {
+        command.setFfprobePath(ffmpegPaths.ffprobePath);
+      }
+      
+      // Get video duration first
+      ffmpeg.ffprobe(inputPath, (err, metadata) => {
+        if (err) {
+          reject(new Error(`Failed to get video metadata: ${err.message}`));
+          return;
+        }
+        
+        const duration = metadata.format.duration;
+        
+        // Apply fade effects
+        const videoFilters = [];
+        const audioFilters = [];
+        
+        // Video fade in
+        if (fadeSettings.videoFadeIn > 0) {
+          videoFilters.push(`fade=t=in:st=0:d=${fadeSettings.videoFadeIn}`);
+        }
+        
+        // Video fade out
+        if (fadeSettings.videoFadeOut > 0) {
+          videoFilters.push(`fade=t=out:st=${duration - fadeSettings.videoFadeOut}:d=${fadeSettings.videoFadeOut}`);
+        }
+        
+        // Audio fade in
+        if (fadeSettings.audioFadeIn > 0) {
+          audioFilters.push(`afade=t=in:st=0:d=${fadeSettings.audioFadeIn}`);
+        }
+        
+        // Audio fade out
+        if (fadeSettings.audioFadeOut > 0) {
+          audioFilters.push(`afade=t=out:st=${duration - fadeSettings.audioFadeOut}:d=${fadeSettings.audioFadeOut}`);
+        }
+        
+        // Apply filters
+        if (videoFilters.length > 0) {
+          command = command.videoFilters(videoFilters);
+        }
+        if (audioFilters.length > 0) {
+          command = command.audioFilters(audioFilters);
+        }
+        
+        // Set high quality output
+        command = command.videoCodec('libx264').videoBitrate('4000k');
+        
+        // Store the command reference for cancellation
+        currentFFmpegProcess = command
+          .output(outputPath)
+          .on('start', (commandLine) => {
+            console.log('Spawned FFmpeg with command: ' + commandLine);
+            event.sender.send('processing-started');
+          })
+          .on('progress', (progress) => {
+            console.log('Processing progress:', progress);
+            event.sender.send('processing-progress', progress);
+          })
+          .on('end', () => {
+            console.log('Quick fade processing finished successfully');
+            currentFFmpegProcess = null;
+            resolve({ success: true, outputPath });
+          })
+          .on('error', (err) => {
+            console.error('Error during quick fade processing:', err);
+            currentFFmpegProcess = null;
+            
+            // Check if this was a cancellation
+            if (err.message && (err.message.includes('SIGTERM') || err.message.includes('cancelled'))) {
+              reject(new Error('Processing was cancelled by user'));
+            } else {
+              reject(new Error(`FFmpeg processing failed: ${err.message}`));
+            }
+          })
+          .run();
+      });
+    } catch (error) {
+      console.error('Error setting up quick fade FFmpeg command:', error);
+      reject(new Error(`Failed to setup FFmpeg command: ${error.message}`));
+    }
+  });
+});
+
+// Audio rip processing
+ipcMain.handle('process-audio-rip', async (event, options) => {
+  const { inputPath, outputPath } = options;
+  const ffmpegPaths = configManager.getFFmpegPaths();
+  
+  console.log('Processing audio rip with options:', {
+    inputPath,
+    outputPath
+  });
+  
+  if (!inputPath || !outputPath) {
+    throw new Error('Input and output paths are required');
+  }
+  
+  return new Promise((resolve, reject) => {
+    try {
+      let command = ffmpeg(inputPath);
+      
+      // Set FFmpeg and FFprobe paths
+      if (ffmpegPaths.ffmpegPath && ffmpegPaths.ffmpegPath !== 'ffmpeg') {
+        command.setFfmpegPath(ffmpegPaths.ffmpegPath);
+      }
+      if (ffmpegPaths.ffprobePath && ffmpegPaths.ffprobePath !== 'ffprobe') {
+        command.setFfprobePath(ffmpegPaths.ffprobePath);
+      }
+      
+      // Determine output format based on file extension
+      const outputExt = path.extname(outputPath).toLowerCase();
+      let audioCodec = 'pcm_s16le'; // Default to WAV
+      
+      switch (outputExt) {
+        case '.mp3':
+          audioCodec = 'libmp3lame';
+          break;
+        case '.aac':
+          audioCodec = 'aac';
+          break;
+        case '.wav':
+        default:
+          audioCodec = 'pcm_s16le';
+          break;
+      }
+      
+      // Configure for audio-only output
+      command = command.noVideo().audioCodec(audioCodec);
+      
+      // Store the command reference for cancellation
+      currentFFmpegProcess = command
+        .output(outputPath)
+        .on('start', (commandLine) => {
+          console.log('Spawned FFmpeg with command: ' + commandLine);
+          event.sender.send('processing-started');
+        })
+        .on('progress', (progress) => {
+          console.log('Processing progress:', progress);
+          event.sender.send('processing-progress', progress);
+        })
+        .on('end', () => {
+          console.log('Audio rip processing finished successfully');
+          currentFFmpegProcess = null;
+          resolve({ success: true, outputPath });
+        })
+        .on('error', (err) => {
+          console.error('Error during audio rip processing:', err);
+          currentFFmpegProcess = null;
+          
+          // Check if this was a cancellation
+          if (err.message && (err.message.includes('SIGTERM') || err.message.includes('cancelled'))) {
+            reject(new Error('Processing was cancelled by user'));
+          } else {
+            reject(new Error(`FFmpeg processing failed: ${err.message}`));
+          }
+        })
+        .run();
+    } catch (error) {
+      console.error('Error setting up audio rip FFmpeg command:', error);
+      reject(new Error(`Failed to setup FFmpeg command: ${error.message}`));
+    }
   });
 });

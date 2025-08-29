@@ -15,7 +15,7 @@ const Help = ({ isOpen, onClose }) => {
         <div className="help-content">
           <div className="help-section">
             <h3>Getting Started</h3>
-            <p>PHEdit is a simple video editing tool that lets you create clips from your videos with professional effects.</p>
+            <p>PHEdit is a simple video editing tool that lets you create edited videos with professional effects.</p>
             
             <h4>Step 1: Load a Video</h4>
             <ol>
@@ -44,7 +44,7 @@ const Help = ({ isOpen, onClose }) => {
               <li><strong>Set the end point</strong> by clicking the "Set Out Point" button (or press 'O')</li>
             </ol>
             
-            <p><strong>Tip:</strong> You can see your selected clip highlighted in blue on the timeline.</p>
+            <p><strong>Tip:</strong> You can see your selected section highlighted in blue on the timeline.</p>
           </div>
 
           <div className="help-section">
@@ -163,7 +163,7 @@ const Help = ({ isOpen, onClose }) => {
             <h3>Tips for Best Results</h3>
             <ul>
               <li>Use high-quality source videos for the best output</li>
-              <li>Keep fade effects under 3 seconds for most clips</li>
+              <li>Keep fade effects under 3 seconds for most videos</li>
               <li>Use "High" quality for important projects</li>
               <li>Use "Medium" or "Low" quality for web sharing or quick previews</li>
               <li>Test your settings on a short clip first</li>

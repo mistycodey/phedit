@@ -35,7 +35,9 @@ const Controls = ({
   onExportTypeChange,
   currentTime,
   duration,
-  onSeek
+  onSeek,
+  onPreviewClip,
+  isPreviewMode
 }) => {
   const clipDuration = outPoint - inPoint;
   const maxFadeIn = clipDuration / 2;
@@ -57,6 +59,8 @@ const Controls = ({
           onSetOutPoint={onSetOutPoint}
           formatTime={formatTime}
           hasVideo={hasVideo}
+          onPreviewClip={onPreviewClip}
+          isPreviewMode={isPreviewMode}
         />
       </div>
 
@@ -64,9 +68,9 @@ const Controls = ({
       <div className="controls-grid">
 
 
-        {/* Clip Selection */}
+        {/* Video Trimming */}
         <div className="control-pane">
-          <h3>Clip Selection</h3>
+          <h3>Video Trimming</h3>
           <div className="control-row">
             <button 
               className="btn btn-secondary" 

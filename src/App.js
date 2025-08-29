@@ -7,12 +7,18 @@ import ConfirmModal from './components/ConfirmModal';
 import SessionRestoreModal from './components/SessionRestoreModal';
 import ExportProgressOverlay from './components/ExportProgressOverlay';
 import Help from './components/Help';
+import StartupScreen from './components/StartupScreen';
+import TasksScreen from './components/TasksScreen';
 import './App.css';
 
 const { ipcRenderer } = window.require('electron');
 const path = window.require('path');
 
 function App() {
+  // App mode state
+  const [appMode, setAppMode] = useState('startup'); // 'startup', 'editor', 'tasks', 'settings'
+  
+  // Single video state
   const [videoFile, setVideoFile] = useState(null);
   const [videoFilePath, setVideoFilePath] = useState(null);
   const [videoFileName, setVideoFileName] = useState(null);
@@ -35,11 +41,11 @@ function App() {
   const [outputFilePath, setOutputFilePath] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const [exportType, setExportType] = useState('video'); // 'video' or 'audio'
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [infoModal, setInfoModal] = useState({ isOpen: false, title: '', message: '', type: 'info' });
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: '', message: '', onConfirm: null });
   const [sessionRestoreModal, setSessionRestoreModal] = useState({ isOpen: false, sessionState: null });
   const [showHelp, setShowHelp] = useState(false);
-
 
   const videoRef = useRef(null);
 
@@ -61,6 +67,14 @@ function App() {
 
   const closeSessionRestoreModal = () => {
     setSessionRestoreModal({ isOpen: false, sessionState: null });
+  };
+
+  const handleModeSelect = (mode) => {
+    setAppMode(mode);
+  };
+
+  const handleBackToStartup = () => {
+    setAppMode('startup');
   };
 
   useEffect(() => {
@@ -145,22 +159,22 @@ function App() {
       const result = await ipcRenderer.invoke('open-file-dialog');
       if (!result.canceled && result.filePaths.length > 0) {
         const filePath = result.filePaths[0];
+        const fileName = path.basename(filePath);
         
-        // Store the original file path for processing
-        setVideoFilePath(filePath);
-        setVideoFileName(path.basename(filePath));
-        
-        // Get video metadata first
+        // Get video metadata and URL
         const metadata = await ipcRenderer.invoke('get-video-info', filePath);
-        setVideoMetadata(metadata);
-        
-        // Get the video URL for the player
         const videoUrl = await ipcRenderer.invoke('get-video-url', filePath);
+        
+        setVideoFilePath(filePath);
+        setVideoFileName(fileName);
         setVideoFile(videoUrl);
+        setVideoMetadata(metadata);
         
         const videoDuration = metadata.format.duration;
         setDuration(videoDuration);
         setOutPoint(videoDuration);
+        
+        // Reset other values
         setCurrentTime(0);
         setInPoint(0);
         setFadeIn(0);
@@ -169,8 +183,6 @@ function App() {
         setAudioFadeOut(0);
         setSilenceAtStart(0);
         setBlackScreenAtStart(0);
-        setExportQuality('high');
-        setExportSize(100);
       }
     } catch (error) {
       console.error('Error loading video:', error);
@@ -200,12 +212,49 @@ function App() {
     }
   };
 
-  const handleSetInPoint = () => {
-    setInPoint(currentTime);
+  const handleSetInPoint = (time = currentTime) => {
+    setInPoint(time);
   };
 
-  const handleSetOutPoint = () => {
-    setOutPoint(currentTime);
+  const handleSetOutPoint = (time = currentTime) => {
+    setOutPoint(time);
+  };
+
+  const handlePreviewClip = (startTime, endTime) => {
+    if (!videoRef.current) return;
+    
+    setIsPreviewMode(true);
+    setIsPlaying(true);
+    
+    // Seek to start time
+    handleSeek(startTime);
+    
+    // Wait a moment for seek to complete, then play
+    setTimeout(() => {
+      if (videoRef.current) {
+        videoRef.current.play().then(() => {
+          // Set up monitoring to stop at end time
+          const checkTime = () => {
+            if (videoRef.current && videoRef.current.currentTime >= endTime) {
+              videoRef.current.pause();
+              setIsPlaying(false);
+              setIsPreviewMode(false);
+              return;
+            }
+            
+            if (isPreviewMode) {
+              requestAnimationFrame(checkTime);
+            }
+          };
+          
+          checkTime();
+        }).catch(error => {
+          console.error('Error playing preview:', error);
+          setIsPlaying(false);
+          setIsPreviewMode(false);
+        });
+      }
+    }, 100);
   };
 
   const handleClearClipPoints = () => {
@@ -238,18 +287,18 @@ function App() {
         setDuration(videoDuration);
       }
       
-             // Restore other values
-       if (restoreData.inPoint !== undefined) setInPoint(restoreData.inPoint);
-       if (restoreData.outPoint !== undefined) setOutPoint(restoreData.outPoint);
-       if (restoreData.fadeIn !== undefined) setFadeIn(restoreData.fadeIn);
-       if (restoreData.fadeOut !== undefined) setFadeOut(restoreData.fadeOut);
-       if (restoreData.audioFadeIn !== undefined) setAudioFadeIn(restoreData.audioFadeIn);
-       if (restoreData.audioFadeOut !== undefined) setAudioFadeOut(restoreData.audioFadeOut);
-       if (restoreData.silenceAtStart !== undefined) setSilenceAtStart(restoreData.silenceAtStart);
-       if (restoreData.blackScreenAtStart !== undefined) setBlackScreenAtStart(restoreData.blackScreenAtStart);
-       if (restoreData.exportQuality !== undefined) setExportQuality(restoreData.exportQuality);
-       if (restoreData.exportSize !== undefined) setExportSize(restoreData.exportSize);
-       if (restoreData.exportType !== undefined) setExportType(restoreData.exportType);
+      // Restore other values
+      if (restoreData.inPoint !== undefined) setInPoint(restoreData.inPoint);
+      if (restoreData.outPoint !== undefined) setOutPoint(restoreData.outPoint);
+      if (restoreData.fadeIn !== undefined) setFadeIn(restoreData.fadeIn);
+      if (restoreData.fadeOut !== undefined) setFadeOut(restoreData.fadeOut);
+      if (restoreData.audioFadeIn !== undefined) setAudioFadeIn(restoreData.audioFadeIn);
+      if (restoreData.audioFadeOut !== undefined) setAudioFadeOut(restoreData.audioFadeOut);
+      if (restoreData.silenceAtStart !== undefined) setSilenceAtStart(restoreData.silenceAtStart);
+      if (restoreData.blackScreenAtStart !== undefined) setBlackScreenAtStart(restoreData.blackScreenAtStart);
+      if (restoreData.exportQuality !== undefined) setExportQuality(restoreData.exportQuality);
+      if (restoreData.exportSize !== undefined) setExportSize(restoreData.exportSize);
+      if (restoreData.exportType !== undefined) setExportType(restoreData.exportType);
       
       showInfoModal('Session Restored', 'Your previous session settings have been restored successfully.', 'success');
     } catch (error) {
@@ -290,9 +339,9 @@ function App() {
     saveSessionState();
   }, [videoFilePath, videoFileName, inPoint, outPoint, fadeIn, fadeOut, audioFadeIn, audioFadeOut, silenceAtStart, blackScreenAtStart, exportQuality, exportSize, exportType]);
 
-  const handleExport = async () => {
-    if (!videoFilePath) {
-      showInfoModal('Export Error', 'No video file loaded. Please load a video first.', 'error');
+    const handleExport = async () => {
+    if (!videoFile) {
+      showInfoModal('Export Error', 'No video loaded. Please load a video first.', 'error');
       return;
     }
 
@@ -312,18 +361,18 @@ function App() {
         return;
       }
       
-             if (!result.filePath) {
-         showInfoModal('Export Error', 'No file path selected.', 'error');
-         return;
-       }
+      if (!result.filePath) {
+        showInfoModal('Export Error', 'No file path selected.', 'error');
+        return;
+      }
 
-       setOutputFilePath(result.filePath);
+      setOutputFilePath(result.filePath);
 
-       console.log('Starting export with parameters:', {
+      console.log('Starting export with parameters:', {
         inputPath: videoFilePath,
         outputPath: result.filePath,
-        startTime: inPoint,
-        duration: clipDuration,
+        inPoint: inPoint,
+        outPoint: outPoint,
         fadeIn: fadeIn,
         fadeOut: fadeOut,
         audioFadeIn: audioFadeIn,
@@ -338,8 +387,8 @@ function App() {
       const exportResult = await ipcRenderer.invoke('process-video', {
         inputPath: videoFilePath,
         outputPath: result.filePath,
-        startTime: inPoint,
-        duration: clipDuration,
+        inPoint: inPoint,
+        outPoint: outPoint,
         fadeIn: fadeIn,
         fadeOut: fadeOut,
         audioFadeIn: audioFadeIn,
@@ -351,10 +400,10 @@ function App() {
         exportType: exportType
       });
       
-             console.log('Export completed:', exportResult);
-       setIsProcessing(false);
-       setOutputFilePath(null);
-       const fileType = exportType === 'audio' ? 'Audio' : 'Video';
+      console.log('Export completed:', exportResult);
+      setIsProcessing(false);
+      setOutputFilePath(null);
+      const fileType = exportType === 'audio' ? 'Audio' : 'Video';
       
       // Show success modal with option to open folder
       const fileName = path.basename(result.filePath);
@@ -379,11 +428,11 @@ function App() {
       // Handle cancellation differently from other errors
       if (error.message.includes('cancelled by user')) {
         showInfoModal('Export Cancelled', 'The export was cancelled by the user.', 'info');
-             } else {
-         showInfoModal('Export Error', `Failed to export: ${error.message}`, 'error');
-       }
-       setIsProcessing(false);
-       setOutputFilePath(null);
+      } else {
+        showInfoModal('Export Error', `Failed to export: ${error.message}`, 'error');
+      }
+      setIsProcessing(false);
+      setOutputFilePath(null);
     }
   };
 
@@ -400,16 +449,47 @@ function App() {
   };
 
   const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
+    const hours = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
     const secs = Math.floor(seconds % 60);
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    const ms = Math.floor((seconds % 1) * 1000);
+    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}:${ms.toString().padStart(3, '0')}`;
   };
 
+  // Render different screens based on app mode
+  if (appMode === 'startup') {
+    return <StartupScreen onModeSelect={handleModeSelect} />;
+  }
+
+  if (appMode === 'tasks') {
+    return <TasksScreen onBack={handleBackToStartup} />;
+  }
+
+  if (appMode === 'settings') {
+    return (
+      <div className="app">
+        <div className="header">
+          <div className="logo">PHEdit</div>
+          <div className="header-controls">
+            <button className="btn btn-secondary" onClick={handleBackToStartup}>
+              ← Back to Menu
+            </button>
+          </div>
+        </div>
+        <Settings isOpen={true} onClose={handleBackToStartup} />
+      </div>
+    );
+  }
+
+  // Editor mode (default app interface)
   return (
     <div className={`app ${!videoFile ? 'no-video-loaded' : ''}`}>
       <div className="header">
         <div className="logo">PHEdit</div>
         <div className="header-controls">
+          <button className="btn btn-secondary" onClick={handleBackToStartup}>
+            ← Menu
+          </button>
           <button className="btn btn-secondary" onClick={() => setShowHelp(true)}>
             Help
           </button>
@@ -423,25 +503,25 @@ function App() {
       </div>
       
       <div className="main-content">
-                 <div className={`video-container ${isPlaying ? 'playing' : ''}`}>
+        <div className={`video-container ${isPlaying ? 'playing' : ''}`}>
           {videoFile ? (
             <>
-                             <VideoPlayer
-                 ref={videoRef}
-                 src={videoFile}
-                 onTimeUpdate={handleTimeUpdate}
-                 onLoadedMetadata={(e) => {
-                   setDuration(e.target.duration);
-                   setOutPoint(e.target.duration);
-                 }}
-                 currentTime={currentTime}
-                 videoMetadata={videoMetadata}
-                 isPlaying={isPlaying}
-                 onPlayPause={handlePlayPause}
-                 onSeek={handleSeek}
-                 duration={duration}
-                 hasVideo={!!videoFile}
-               />
+              <VideoPlayer
+                ref={videoRef}
+                src={videoFile}
+                onTimeUpdate={handleTimeUpdate}
+                onLoadedMetadata={(e) => {
+                  setDuration(e.target.duration);
+                  setOutPoint(e.target.duration);
+                }}
+                currentTime={currentTime}
+                videoMetadata={videoMetadata}
+                isPlaying={isPlaying}
+                onPlayPause={handlePlayPause}
+                onSeek={handleSeek}
+                duration={duration}
+                hasVideo={!!videoFile}
+              />
               <div className="file-info">
                 <div className="file-name">{videoFileName}</div>
                 <div className="file-path">{videoFilePath}</div>
@@ -459,15 +539,8 @@ function App() {
           )}
         </div>
 
+        {/* Controls */}
         <div className="controls-panel">
-          {!videoFile && (
-            <div className="controls-disabled-overlay">
-              <div className="controls-disabled-message">
-                <span>📹</span>
-                <p>Load a video to enable controls</p>
-              </div>
-            </div>
-          )}
           <Controls
             isPlaying={isPlaying}
             onPlayPause={handlePlayPause}
@@ -503,6 +576,8 @@ function App() {
             currentTime={currentTime}
             duration={duration}
             onSeek={handleSeek}
+            onPreviewClip={handlePreviewClip}
+            isPreviewMode={isPreviewMode}
           />
         </div>
       </div>
@@ -533,35 +608,35 @@ function App() {
         message={confirmModal.message}
       />
 
-             <SessionRestoreModal
-         isOpen={sessionRestoreModal.isOpen}
-         onClose={closeSessionRestoreModal}
-         onRestore={handleSessionRestore}
-         sessionState={sessionRestoreModal.sessionState}
-       />
+      <SessionRestoreModal
+        isOpen={sessionRestoreModal.isOpen}
+        onClose={closeSessionRestoreModal}
+        onRestore={handleSessionRestore}
+        sessionState={sessionRestoreModal.sessionState}
+      />
 
-       <ExportProgressOverlay
-         isVisible={isProcessing}
-         progress={processingProgress}
-         exportType={exportType}
-         onCancel={handleCancelExport}
-         sourceFile={videoFileName || 'Unknown'}
-         outputFile={outputFilePath ? path.basename(outputFilePath) : 'Not started'}
-         exportOptions={isProcessing ? {
-           startTime: inPoint,
-           duration: outPoint - inPoint,
-           fadeIn,
-           fadeOut,
-           audioFadeIn,
-           audioFadeOut,
-           silenceAtStart,
-           blackScreenAtStart,
-           exportQuality,
-           exportSize
-         } : null}
-       />
-     </div>
-   );
- }
+      <ExportProgressOverlay
+        isVisible={isProcessing}
+        progress={processingProgress}
+        exportType={exportType}
+        onCancel={handleCancelExport}
+        sourceFile={videoFileName || 'Unknown'}
+        outputFile={outputFilePath ? path.basename(outputFilePath) : 'Not started'}
+        exportOptions={isProcessing ? {
+          startTime: inPoint,
+          duration: outPoint - inPoint,
+          fadeIn,
+          fadeOut,
+          audioFadeIn,
+          audioFadeOut,
+          silenceAtStart,
+          blackScreenAtStart,
+          exportQuality,
+          exportSize
+        } : null}
+      />
+    </div>
+  );
+}
 
 export default App;
