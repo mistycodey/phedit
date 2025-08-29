@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import VideoPlayer from './components/VideoPlayer';
 import Controls from './components/Controls';
 import Settings from './components/Settings';
@@ -28,6 +28,9 @@ function App() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [inPoint, setInPoint] = useState(0);
   const [outPoint, setOutPoint] = useState(0);
+  
+  // Preview monitoring ref
+  const previewMonitorRef = useRef(null);
   const [fadeIn, setFadeIn] = useState(0);
   const [fadeOut, setFadeOut] = useState(0);
   const [audioFadeIn, setAudioFadeIn] = useState(0);
@@ -46,6 +49,7 @@ function App() {
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: '', message: '', onConfirm: null });
   const [sessionRestoreModal, setSessionRestoreModal] = useState({ isOpen: false, sessionState: null });
   const [showHelp, setShowHelp] = useState(false);
+  const [isRestoringSession, setIsRestoringSession] = useState(false);
 
   const videoRef = useRef(null);
 
@@ -115,6 +119,63 @@ function App() {
     };
   }, []);
 
+  // Cleanup preview monitoring on unmount
+  useEffect(() => {
+    return () => {
+      if (previewMonitorRef.current) {
+        cancelAnimationFrame(previewMonitorRef.current);
+        previewMonitorRef.current = null;
+      }
+    };
+  }, []);
+
+  // Monitor outPoint changes during preview mode
+  useEffect(() => {
+    if (isPreviewMode && videoRef.current && !videoRef.current.paused) {
+      // Restart monitoring with new outPoint value
+      if (previewMonitorRef.current) {
+        cancelAnimationFrame(previewMonitorRef.current);
+      }
+      
+      const checkTime = () => {
+        if (videoRef.current && isPreviewMode) {
+          const currentVideoTime = videoRef.current.currentTime;
+          
+          // Check if we've reached or passed the current out point
+          if (currentVideoTime >= outPoint) {
+            videoRef.current.pause();
+            setIsPlaying(false);
+            setIsPreviewMode(false);
+            if (previewMonitorRef.current) {
+              cancelAnimationFrame(previewMonitorRef.current);
+              previewMonitorRef.current = null;
+            }
+            return;
+          }
+          
+          // Continue monitoring only if video is still playing and in preview mode
+          if (!videoRef.current.paused && isPreviewMode) {
+            previewMonitorRef.current = requestAnimationFrame(checkTime);
+          } else {
+            // Clean up if video paused or preview mode ended
+            if (previewMonitorRef.current) {
+              cancelAnimationFrame(previewMonitorRef.current);
+              previewMonitorRef.current = null;
+            }
+          }
+        } else {
+          // Clean up if not in preview mode or video ref missing
+          if (previewMonitorRef.current) {
+            cancelAnimationFrame(previewMonitorRef.current);
+            previewMonitorRef.current = null;
+          }
+        }
+      };
+      
+      checkTime();
+    }
+  }, [outPoint, isPreviewMode]);
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -126,12 +187,34 @@ function App() {
           handlePlayPause();
           break;
         case 'ArrowLeft':
-          event.preventDefault();
-          handleSeek(Math.max(0, currentTime - 10));
+          if (event.shiftKey && event.ctrlKey) {
+            // Shift+Ctrl+Left: Nudge IN point left by 1 second
+            event.preventDefault();
+            handleSetInPoint(Math.max(0, inPoint - 1));
+          } else if (event.shiftKey) {
+            // Shift+Left: Nudge IN point left by 0.1 seconds
+            event.preventDefault();
+            handleSetInPoint(Math.max(0, inPoint - 0.1));
+          } else {
+            // Normal: Skip back 10 seconds
+            event.preventDefault();
+            handleSeek(Math.max(0, currentTime - 10));
+          }
           break;
         case 'ArrowRight':
-          event.preventDefault();
-          handleSeek(Math.min(duration, currentTime + 10));
+          if (event.shiftKey && event.ctrlKey) {
+            // Shift+Ctrl+Right: Nudge IN point right by 1 second
+            event.preventDefault();
+            handleSetInPoint(Math.min(outPoint - 0.1, inPoint + 1));
+          } else if (event.shiftKey) {
+            // Shift+Right: Nudge IN point right by 0.1 seconds
+            event.preventDefault();
+            handleSetInPoint(Math.min(outPoint - 0.1, inPoint + 0.1));
+          } else {
+            // Normal: Skip forward 10 seconds
+            event.preventDefault();
+            handleSeek(Math.min(duration, currentTime + 10));
+          }
           break;
         case 'i':
         case 'I':
@@ -142,6 +225,28 @@ function App() {
         case 'O':
           event.preventDefault();
           handleSetOutPoint();
+          break;
+        case 'ArrowUp':
+          if (event.shiftKey && event.ctrlKey) {
+            // Shift+Ctrl+Up: Nudge OUT point right by 1 second
+            event.preventDefault();
+            handleSetOutPoint(Math.min(duration, outPoint + 1));
+          } else if (event.shiftKey) {
+            // Shift+Up: Nudge OUT point right by 0.1 seconds
+            event.preventDefault();
+            handleSetOutPoint(Math.min(duration, outPoint + 0.1));
+          }
+          break;
+        case 'ArrowDown':
+          if (event.shiftKey && event.ctrlKey) {
+            // Shift+Ctrl+Down: Nudge OUT point left by 1 second
+            event.preventDefault();
+            handleSetOutPoint(Math.max(inPoint + 0.1, outPoint - 1));
+          } else if (event.shiftKey) {
+            // Shift+Down: Nudge OUT point left by 0.1 seconds
+            event.preventDefault();
+            handleSetOutPoint(Math.max(inPoint + 0.1, outPoint - 0.1));
+          }
           break;
         default:
           break;
@@ -201,6 +306,11 @@ function App() {
       // If we were in preview mode and user manually seeks (not from preview), exit preview mode
       if (isPreviewMode && !fromPreview) {
         setIsPreviewMode(false);
+        // Clean up preview monitoring
+        if (previewMonitorRef.current) {
+          cancelAnimationFrame(previewMonitorRef.current);
+          previewMonitorRef.current = null;
+        }
       }
     }
   };
@@ -212,6 +322,11 @@ function App() {
         // If we were in preview mode and user manually paused, exit preview mode
         if (isPreviewMode) {
           setIsPreviewMode(false);
+          // Clean up preview monitoring
+          if (previewMonitorRef.current) {
+            cancelAnimationFrame(previewMonitorRef.current);
+            previewMonitorRef.current = null;
+          }
         }
       } else {
         videoRef.current.play();
@@ -227,9 +342,17 @@ function App() {
   const handleSetOutPoint = (time = currentTime) => {
     setOutPoint(time);
   };
+  
+
 
   const handlePreviewClip = (startTime, endTime) => {
     if (!videoRef.current) return;
+    
+    // Clean up any existing preview monitoring
+    if (previewMonitorRef.current) {
+      cancelAnimationFrame(previewMonitorRef.current);
+      previewMonitorRef.current = null;
+    }
     
     setIsPreviewMode(true);
     setIsPlaying(true);
@@ -240,45 +363,7 @@ function App() {
     // Wait a moment for seek to complete, then play
     setTimeout(() => {
       if (videoRef.current) {
-        videoRef.current.play().then(() => {
-          // Set up monitoring to stop at end time
-          let animationFrameId;
-          const checkTime = () => {
-            if (videoRef.current) {
-              const currentVideoTime = videoRef.current.currentTime;
-              
-              // Check if we've reached or passed the end time
-              if (currentVideoTime >= endTime) {
-                videoRef.current.pause();
-                setIsPlaying(false);
-                setIsPreviewMode(false);
-                if (animationFrameId) {
-                  cancelAnimationFrame(animationFrameId);
-                }
-                return;
-              }
-              
-              // Continue monitoring only if video is still playing and we haven't reached the end
-              if (!videoRef.current.paused && currentVideoTime < endTime) {
-                animationFrameId = requestAnimationFrame(checkTime);
-              } else {
-                // Video was paused by user or other means, exit preview mode
-                setIsPreviewMode(false);
-                if (animationFrameId) {
-                  cancelAnimationFrame(animationFrameId);
-                }
-              }
-            } else {
-              // Video ref no longer exists, clean up
-              setIsPreviewMode(false);
-              if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId);
-              }
-            }
-          };
-          
-          checkTime();
-        }).catch(error => {
+        videoRef.current.play().catch(error => {
           console.error('Error playing preview:', error);
           setIsPlaying(false);
           setIsPreviewMode(false);
@@ -301,6 +386,8 @@ function App() {
 
   const handleSessionRestore = async (restoreData) => {
     try {
+      setIsRestoringSession(true);
+      
       // Restore video file if selected
       if (restoreData.videoFilePath) {
         setVideoFilePath(restoreData.videoFilePath);
@@ -315,11 +402,23 @@ function App() {
         
         const videoDuration = metadata.format.duration;
         setDuration(videoDuration);
+        
+        // Reset current time
+        setCurrentTime(0);
+        
+        // Set IN and OUT points - use restored values if available, otherwise use defaults
+        const restoredInPoint = restoreData.inPoint !== undefined ? restoreData.inPoint : 0;
+        const restoredOutPoint = restoreData.outPoint !== undefined ? restoreData.outPoint : videoDuration;
+        
+        setInPoint(restoredInPoint);
+        setOutPoint(restoredOutPoint);
+      } else {
+        // If not restoring video file, just restore the in/out points
+        if (restoreData.inPoint !== undefined) setInPoint(restoreData.inPoint);
+        if (restoreData.outPoint !== undefined) setOutPoint(restoreData.outPoint);
       }
       
       // Restore other values
-      if (restoreData.inPoint !== undefined) setInPoint(restoreData.inPoint);
-      if (restoreData.outPoint !== undefined) setOutPoint(restoreData.outPoint);
       if (restoreData.fadeIn !== undefined) setFadeIn(restoreData.fadeIn);
       if (restoreData.fadeOut !== undefined) setFadeOut(restoreData.fadeOut);
       if (restoreData.audioFadeIn !== undefined) setAudioFadeIn(restoreData.audioFadeIn);
@@ -334,6 +433,11 @@ function App() {
     } catch (error) {
       console.error('Error restoring session:', error);
       showInfoModal('Restore Error', 'Failed to restore some session settings. The video file may no longer be available.', 'warning');
+    } finally {
+      // Clear the restoring flag after a brief delay to allow metadata loading to complete
+      setTimeout(() => {
+        setIsRestoringSession(false);
+      }, 500);
     }
   };
 
@@ -542,7 +646,10 @@ function App() {
                 onTimeUpdate={handleTimeUpdate}
                 onLoadedMetadata={(e) => {
                   setDuration(e.target.duration);
-                  setOutPoint(e.target.duration);
+                  // Only set OUT point to duration if we're not restoring a session
+                  if (!isRestoringSession) {
+                    setOutPoint(e.target.duration);
+                  }
                 }}
                 currentTime={currentTime}
                 videoMetadata={videoMetadata}

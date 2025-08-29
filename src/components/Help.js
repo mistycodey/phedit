@@ -105,12 +105,30 @@ const Help = ({ isOpen, onClose }) => {
 
           <div className="help-section">
             <h3>Keyboard Shortcuts</h3>
+            
+            <h4>Playback Control</h4>
             <ul>
               <li><strong>Spacebar:</strong> Play/Pause video</li>
               <li><strong>Left Arrow:</strong> Jump back 10 seconds</li>
               <li><strong>Right Arrow:</strong> Jump forward 10 seconds</li>
-              <li><strong>I:</strong> Set In Point</li>
-              <li><strong>O:</strong> Set Out Point</li>
+            </ul>
+            
+            <h4>In/Out Point Control</h4>
+            <ul>
+              <li><strong>I:</strong> Set In Point at current position</li>
+              <li><strong>O:</strong> Set Out Point at current position</li>
+              <li><strong>Shift + Left/Right:</strong> Nudge In Point by 0.1 seconds</li>
+              <li><strong>Shift + Up/Down:</strong> Nudge Out Point by 0.1 seconds</li>
+              <li><strong>Shift + Ctrl + Left/Right:</strong> Nudge In Point by 1 second</li>
+              <li><strong>Shift + Ctrl + Up/Down:</strong> Nudge Out Point by 1 second</li>
+            </ul>
+            
+            <h4>Timeline Interaction</h4>
+            <ul>
+              <li><strong>Click:</strong> Seek to position</li>
+              <li><strong>Drag handles:</strong> Adjust In/Out points directly</li>
+              <li><strong>Right-click:</strong> Context menu with quick actions</li>
+              <li><strong>Shift + Drag:</strong> Select range on timeline</li>
             </ul>
           </div>
 

@@ -597,6 +597,81 @@ code {
   min-width: 80px;
 }
 
+/* Better alignment for fade effects panel */
+.fade-effects-panel .input-group label,
+.video-start-effects-panel .input-group label {
+  min-width: 120px;
+  text-align: left;
+  font-weight: 500;
+}
+
+.fade-effects-panel .input-group,
+.video-start-effects-panel .input-group {
+  margin-bottom: 2px;
+}
+
+.fade-effects-panel .control-row,
+.video-start-effects-panel .control-row {
+  margin-bottom: 8px;
+}
+
+.fade-effects-panel .input-group input[type="number"],
+.video-start-effects-panel .input-group input[type="number"] {
+  width: 55px;
+  text-align: center;
+}
+
+.fade-effects-panel .status-text,
+.video-start-effects-panel .status-text {
+  color: #999;
+  font-size: 13px;
+  padding-left: 4px;
+}
+
+/* Grid layout for fade effects and video start effects */
+.fade-effects-panel,
+.video-start-effects-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Disabled state for audio-only export */
+.control-pane.disabled-for-audio {
+  opacity: 0.4;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.control-pane.disabled-for-audio h3 {
+  color: #666;
+}
+
+.control-pane.disabled-for-audio .input-group label {
+  color: #666;
+}
+
+.control-pane.disabled-for-audio .status-text {
+  color: #888;
+  font-style: italic;
+}
+
+.fade-effects-panel .control-row,
+.video-start-effects-panel .control-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+.fade-effects-panel .input-group,
+.video-start-effects-panel .input-group {
+  display: grid;
+  grid-template-columns: 120px 55px 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0;
+  padding-right: 15px;
+}
+
 .input-group input[type="number"] {
   background-color: #3a3a3a;
   border: 1px solid #555;
@@ -983,6 +1058,222 @@ code {
   font-size: 11px;
   color: #666;
   font-style: italic;
+}
+
+/* Context Menu */
+.timeline-context-menu {
+  background-color: #2a2a2a;
+  border: 1px solid #4a4a4a;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  padding: 4px 0;
+  min-width: 150px;
+  font-size: 12px;
+}
+
+.context-menu-header {
+  padding: 8px 12px;
+  color: #4a9eff;
+  font-weight: bold;
+  font-size: 11px;
+  border-bottom: 1px solid #3a3a3a;
+  margin-bottom: 4px;
+}
+
+.context-menu-item {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  color: #ccc;
+  text-align: left;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.15s ease;
+}
+
+.context-menu-item:hover {
+  background-color: #4a9eff;
+  color: #fff;
+}
+
+/* Enhanced Timeline Controls */
+.timeline-controls {
+  display: flex;
+  gap: 8px;
+  margin: 10px 15px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.timeline-extend-controls {
+  display: flex;
+  gap: 4px;
+  margin-left: 8px;
+}
+
+.btn-xs {
+  padding: 4px 8px;
+  font-size: 10px;
+  min-width: auto;
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 1px solid #4a4a4a;
+  color: #ccc;
+}
+
+.btn-outline:hover {
+  background-color: #4a4a4a;
+  border-color: #666;
+}
+
+/* Always visible and draggable handles */
+.timeline-handle {
+  opacity: 1;
+  cursor: ew-resize;
+}
+
+.timeline-handle:hover {
+  transform: translateX(-50%) scale(1.1);
+  box-shadow: 0 0 8px rgba(74, 158, 255, 0.4);
+}
+
+.in-point-handle {
+  background-color: #28a745;
+}
+
+.in-point-handle:hover {
+  background-color: #218838;
+}
+
+.out-point-handle {
+  background-color: #dc3545;
+}
+
+.out-point-handle:hover {
+  background-color: #c82333;
+}
+
+/* Remove active mode styling since handles are always active */
+.timeline-clip-track {
+  cursor: crosshair;
+}
+
+.timeline-clip-track:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: #4a9eff;
+}
+
+/* Range selection visual feedback */
+.timeline-clip-track.range-selecting {
+  background-color: rgba(74, 158, 255, 0.15);
+  border-color: #4a9eff;
+}
+
+/* Preview Clip Active State */
+.preview-active {
+  background-color: #4a9eff !important;
+  border-color: #4a9eff !important;
+  color: #fff !important;
+  box-shadow: 0 0 8px rgba(74, 158, 255, 0.4);
+  animation: preview-pulse 2s ease-in-out infinite;
+}
+
+.preview-active:hover {
+  background-color: #357abd !important;
+  border-color: #357abd !important;
+  transform: none; /* Disable normal hover transform */
+}
+
+.preview-indicator {
+  color: #ff4444;
+  font-size: 14px;
+  margin-right: 4px;
+  animation: preview-blink 1.5s ease-in-out infinite;
+}
+
+@keyframes preview-pulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(74, 158, 255, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(74, 158, 255, 0.6);
+  }
+}
+
+@keyframes preview-blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0.3;
+  }
+}
+
+/* Preview Mode Indicator in Instructions */
+.preview-mode-indicator {
+  color: #4a9eff;
+  font-weight: bold;
+  margin-left: 8px;
+}
+
+.preview-dot {
+  color: #ff4444;
+  margin-right: 4px;
+  animation: preview-blink 1.5s ease-in-out infinite;
+}
+
+/* Button Playhead Icon */
+.button-playhead-icon {
+  display: inline-block;
+  position: relative;
+  width: 12px;
+  height: 8px;
+  background-color: #4a9eff;
+  border: 1px solid #fff;
+  border-radius: 2px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.button-playhead-icon::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
+  border-top: 4px solid #4a9eff;
+}
+
+/* Button Play Icon */
+.button-play-icon {
+  display: inline-block;
+  margin-right: 6px;
+  color: #4a9eff;
+  font-size: 12px;
+  vertical-align: middle;
+}
+
+/* Button Reset Icon */
+.button-reset-icon {
+  display: inline-block;
+  margin-right: 6px;
+  color: #999;
+  font-size: 14px;
+  vertical-align: middle;
+  font-weight: bold;
+}
+
+.btn:hover .button-reset-icon {
+  color: #ccc;
 }
 
 .progress-bar {
