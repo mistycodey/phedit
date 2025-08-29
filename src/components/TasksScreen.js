@@ -496,13 +496,13 @@ const TasksScreen = ({ onBack }) => {
         <div className="task-card" onClick={handleQuickFade}>
           <div className="task-icon">🎬</div>
           <h3>Quick Fade</h3>
-          <p>Add professional fade effects to your video</p>
+          <p>Add fade effects to your video</p>
           <div className="task-details">
             <ul>
               <li>6-second video fade in</li>
               <li>3-second audio fade in</li>
               <li>3-second fade out (video + audio)</li>
-              <li>High-quality output</li>
+              <li>Export processed video</li>
             </ul>
           </div>
           <div className="task-action">
@@ -531,7 +531,7 @@ const TasksScreen = ({ onBack }) => {
       <div className="tasks-info">
         <h4>About Quick Tasks:</h4>
         <p>These tasks are designed for speed and simplicity. They use optimized settings for the best balance of quality and processing time.</p>
-        <p>For more advanced editing options, use the Editor mode.</p>
+        <p>For additional editing options, use the Editor mode.</p>
         
 
       </div>

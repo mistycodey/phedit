@@ -13,24 +13,25 @@
   left: 8px;
   right: 8px;
   bottom: 8px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #1a1a1a;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   border-radius: 8px;
-  overflow: hidden; /* Prevent content from extending beyond frame */
+  overflow: hidden; /* Prevent content from extended beyond frame */
 }
 
 .startup-content {
-  background: white;
+  background: #2a2a2a;
+  border: 1px solid #3a3a3a;
   border-radius: 20px;
   padding: 30px;
   max-width: 800px;
   width: 90%;
   max-height: calc(100vh - 100px); /* Account for frame and padding */
   text-align: center;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
   overflow-y: auto; /* Allow scrolling if content is too tall */
   margin: 20px; /* Add margin to prevent touching frame edges */
 }
@@ -52,19 +53,19 @@
 }
 
 .startup-content h1 {
-  color: #333;
+  color: #ffffff;
   margin-bottom: 8px;
   font-size: 2.2rem;
 }
 
 .startup-content h2 {
-  color: #333;
+  color: #ffffff;
   margin-bottom: 8px;
   font-size: 1.8rem;
 }
 
 .startup-content p {
-  color: #666;
+  color: #cccccc;
   margin-bottom: 20px;
   font-size: 1rem;
 }
@@ -85,8 +86,8 @@
 }
 
 .mode-card {
-  background: #f8f9fa;
-  border: 2px solid #e9ecef;
+  background: #3a3a3a;
+  border: 2px solid #4a4a4a;
   border-radius: 15px;
   padding: 25px;
   cursor: pointer;
@@ -95,9 +96,9 @@
 }
 
 .mode-card:hover {
-  border-color: #667eea;
+  border-color: #4a9eff;
   transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
+  box-shadow: 0 10px 25px rgba(74, 158, 255, 0.2);
 }
 
 .mode-icon {
@@ -107,14 +108,14 @@
 }
 
 .mode-card h3 {
-  color: #333;
+  color: #ffffff;
   margin-bottom: 12px;
   font-size: 1.3rem;
   text-align: center;
 }
 
 .mode-card p {
-  color: #666;
+  color: #cccccc;
   margin-bottom: 15px;
   text-align: center;
 }
@@ -127,7 +128,7 @@
 
 .mode-card li {
   padding: 6px 0;
-  color: #555;
+  color: #cccccc;
   position: relative;
   padding-left: 25px;
 }
@@ -136,18 +137,19 @@
   content: "✓";
   position: absolute;
   left: 0;
-  color: #28a745;
+  color: #4a9eff;
   font-weight: bold;
 }
 
 .startup-footer {
   margin-top: 20px;
   padding-top: 15px;
-  border-top: 1px solid #e9ecef;
+  border-top: 1px solid #4a4a4a;
 }
 
 .ffmpeg-info {
-  background: #f8f9fa;
+  background: #3a3a3a;
+  border: 1px solid #4a4a4a;
   border-radius: 10px;
   padding: 15px;
   margin-top: 15px;
@@ -155,7 +157,7 @@
 }
 
 .ffmpeg-info h4 {
-  color: #333;
+  color: #ffffff;
   margin-bottom: 15px;
 }
 
@@ -167,7 +169,7 @@
 
 .ffmpeg-info li {
   padding: 5px 0;
-  color: #666;
+  color: #cccccc;
   position: relative;
   padding-left: 20px;
 }
@@ -176,11 +178,11 @@
   content: "•";
   position: absolute;
   left: 0;
-  color: #667eea;
+  color: #4a9eff;
 }
 
 .ffmpeg-info a {
-  color: #667eea;
+  color: #4a9eff;
   text-decoration: none;
 }
 
@@ -191,7 +193,7 @@
 /* Tasks Screen Styles */
 .tasks-screen {
   height: calc(100vh - 16px); /* Fixed height instead of min-height */
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: #1a1a1a;
   padding: 20px;
   border-radius: 8px;
   overflow-y: auto; /* Enable vertical scrolling */
@@ -212,13 +214,13 @@
 }
 
 .tasks-header h1 {
-  color: #333;
+  color: #ffffff;
   margin: 20px 0 10px 0;
   font-size: 2.5rem;
 }
 
 .tasks-header p {
-  color: #666;
+  color: #cccccc;
   font-size: 1.2rem;
   margin: 0;
 }
@@ -232,19 +234,19 @@
 }
 
 .task-card {
-  background: white;
+  background: #2a2a2a;
+  border: 1px solid #3a3a3a;
   border-radius: 15px;
   padding: 30px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
   cursor: pointer;
-  border: 2px solid transparent;
 }
 
 .task-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-  border-color: #667eea;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+  border-color: #4a9eff;
 }
 
 .task-icon {
@@ -254,14 +256,14 @@
 }
 
 .task-card h3 {
-  color: #333;
+  color: #ffffff;
   margin-bottom: 15px;
   font-size: 1.8rem;
   text-align: center;
 }
 
 .task-card > p {
-  color: #666;
+  color: #cccccc;
   margin-bottom: 20px;
   text-align: center;
   font-size: 1.1rem;
@@ -279,7 +281,7 @@
 
 .task-details li {
   padding: 8px 0;
-  color: #555;
+  color: #cccccc;
   position: relative;
   padding-left: 25px;
 }
@@ -288,7 +290,7 @@
   content: "✓";
   position: absolute;
   left: 0;
-  color: #28a745;
+  color: #4a9eff;
   font-weight: bold;
 }
 
@@ -303,42 +305,44 @@
 }
 
 .tasks-info {
-  background: white;
+  background: #2a2a2a;
+  border: 1px solid #3a3a3a;
   border-radius: 15px;
   padding: 25px;
   max-width: 800px;
   margin: 0 auto;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
   overflow-y: auto; /* Enable vertical scrolling */
   max-height: 50vh; /* Limit height to enable scrolling */
 }
 
 .tasks-info h4 {
-  color: #333;
+  color: #ffffff;
   margin-bottom: 15px;
   font-size: 1.3rem;
 }
 
 .tasks-info p {
-  color: #666;
+  color: #cccccc;
   margin-bottom: 10px;
   line-height: 1.6;
 }
 
 /* Task Steps Styles */
 .task-steps-container {
-  background: white;
+  background: #2a2a2a;
+  border: 1px solid #3a3a3a;
   border-radius: 15px;
   padding: 25px;
   margin: 0 auto 30px auto;
   max-width: 600px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
   overflow-y: auto; /* Enable vertical scrolling */
   max-height: 50vh; /* Limit height to enable scrolling */
 }
 
 .task-steps-header h3 {
-  color: #333;
+  color: #ffffff;
   margin: 0 0 20px 0;
   text-align: center;
   font-size: 1.3rem;
@@ -356,19 +360,19 @@
   gap: 15px;
   padding: 15px;
   border-radius: 10px;
-  background: #f8f9fa;
-  border: 2px solid #e9ecef;
+  background: #3a3a3a;
+  border: 2px solid #4a4a4a;
   transition: all 0.3s ease;
 }
 
 .task-step.current {
-  border-color: #667eea;
-  background: #f0f4ff;
+  border-color: #4a9eff;
+  background: #2a3a4a;
 }
 
 .task-step.completed {
-  border-color: #28a745;
-  background: #f8fff9;
+  border-color: #4a9eff;
+  background: #2a4a3a;
 }
 
 .step-number {
@@ -386,11 +390,11 @@
 }
 
 .task-step.current .step-number {
-  background: #667eea;
+  background: #4a9eff;
 }
 
 .task-step.completed .step-number {
-  background: #28a745;
+  background: #4a9eff;
 }
 
 .step-content {
@@ -401,22 +405,22 @@
 }
 
 .step-text {
-  color: #333;
+  color: #ffffff;
   font-weight: 500;
 }
 
 .task-step.completed .step-text {
-  color: #28a745;
+  color: #4a9eff;
 }
 
 .step-details {
-  color: #666;
+  color: #cccccc;
   font-size: 0.9rem;
   font-style: italic;
 }
 
 .task-step.completed .step-details {
-  color: #28a745;
+  color: #4a9eff;
 }
 
 .step-action {

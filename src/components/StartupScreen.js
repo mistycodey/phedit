@@ -90,29 +90,29 @@ const StartupScreen = ({ onModeSelect }) => {
     <div className="startup-screen">
       <div className="startup-content">
         <div className="startup-icon">🎬</div>
-        <h1>Welcome to PHEdit</h1>
-        <p>Choose your mode:</p>
+        <h1>PHEdit</h1>
+        <p>Select mode:</p>
         
         <div className="mode-selection">
           <div className="mode-card" onClick={() => selectMode('editor')}>
             <div className="mode-icon">✂️</div>
             <h3>Editor</h3>
-            <p>Full video editor with timeline and controls</p>
+            <p>Video editor with timeline and controls</p>
             <ul>
-              <li>Single video editing</li>
+              <li>Video editing</li>
               <li>Fade effects & transitions</li>
-              <li>Custom export settings</li>
+              <li>Export settings</li>
             </ul>
           </div>
           
           <div className="mode-card" onClick={() => selectMode('tasks')}>
             <div className="mode-icon">⚡</div>
             <h3>Tasks</h3>
-            <p>Quick video processing operations</p>
+            <p>Video processing operations</p>
             <ul>
-              <li>Quick fade effects</li>
+              <li>Fade effects</li>
               <li>Audio extraction</li>
-              <li>Simple & fast workflow</li>
+              <li>Batch operations</li>
             </ul>
           </div>
         </div>

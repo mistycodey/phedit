@@ -15,7 +15,7 @@ const Help = ({ isOpen, onClose }) => {
         <div className="help-content">
           <div className="help-section">
             <h3>Getting Started</h3>
-            <p>PHEdit is a simple video editing tool that lets you create edited videos with professional effects.</p>
+            <p>Video editing tool for creating edited videos with fade effects.</p>
             
             <h4>Step 1: Load a Video</h4>
             <ol>
@@ -48,12 +48,12 @@ const Help = ({ isOpen, onClose }) => {
           </div>
 
           <div className="help-section">
-            <h3>Adding Professional Effects</h3>
+            <h3>Adding Effects</h3>
             
             <h4>Fade Effects</h4>
             <ul>
-              <li><strong>Video Fade In:</strong> Creates a smooth fade from black at the start of your clip</li>
-              <li><strong>Video Fade Out:</strong> Creates a smooth fade to black at the end of your clip</li>
+              <li><strong>Video Fade In:</strong> Fade from black at the start of your clip</li>
+              <li><strong>Video Fade Out:</strong> Fade to black at the end of your clip</li>
               <li><strong>Audio Fade In:</strong> Gradually increases the volume at the start</li>
               <li><strong>Audio Fade Out:</strong> Gradually decreases the volume at the end</li>
             </ul>
