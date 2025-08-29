@@ -194,10 +194,14 @@ function App() {
     setCurrentTime(time);
   };
 
-  const handleSeek = (time) => {
+  const handleSeek = (time, fromPreview = false) => {
     setCurrentTime(time);
     if (videoRef.current) {
       videoRef.current.currentTime = time;
+      // If we were in preview mode and user manually seeks (not from preview), exit preview mode
+      if (isPreviewMode && !fromPreview) {
+        setIsPreviewMode(false);
+      }
     }
   };
 
@@ -205,6 +209,10 @@ function App() {
     if (videoRef.current) {
       if (isPlaying) {
         videoRef.current.pause();
+        // If we were in preview mode and user manually paused, exit preview mode
+        if (isPreviewMode) {
+          setIsPreviewMode(false);
+        }
       } else {
         videoRef.current.play();
       }
@@ -227,23 +235,45 @@ function App() {
     setIsPlaying(true);
     
     // Seek to start time
-    handleSeek(startTime);
+    handleSeek(startTime, true);
     
     // Wait a moment for seek to complete, then play
     setTimeout(() => {
       if (videoRef.current) {
         videoRef.current.play().then(() => {
           // Set up monitoring to stop at end time
+          let animationFrameId;
           const checkTime = () => {
-            if (videoRef.current && videoRef.current.currentTime >= endTime) {
-              videoRef.current.pause();
-              setIsPlaying(false);
+            if (videoRef.current) {
+              const currentVideoTime = videoRef.current.currentTime;
+              
+              // Check if we've reached or passed the end time
+              if (currentVideoTime >= endTime) {
+                videoRef.current.pause();
+                setIsPlaying(false);
+                setIsPreviewMode(false);
+                if (animationFrameId) {
+                  cancelAnimationFrame(animationFrameId);
+                }
+                return;
+              }
+              
+              // Continue monitoring only if video is still playing and we haven't reached the end
+              if (!videoRef.current.paused && currentVideoTime < endTime) {
+                animationFrameId = requestAnimationFrame(checkTime);
+              } else {
+                // Video was paused by user or other means, exit preview mode
+                setIsPreviewMode(false);
+                if (animationFrameId) {
+                  cancelAnimationFrame(animationFrameId);
+                }
+              }
+            } else {
+              // Video ref no longer exists, clean up
               setIsPreviewMode(false);
-              return;
-            }
-            
-            if (isPreviewMode) {
-              requestAnimationFrame(checkTime);
+              if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+              }
             }
           };
           
