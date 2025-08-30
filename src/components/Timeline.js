@@ -14,6 +14,7 @@ const Timeline = ({ currentTime, duration, inPoint, outPoint, onSeek, onSetInPoi
   const [contextMenu, setContextMenu] = useState({ show: false, x: 0, y: 0, time: 0 });
   const [isRangeSelecting, setIsRangeSelecting] = useState(false);
   const [rangeStart, setRangeStart] = useState(0);
+  const [justFinishedDragging, setJustFinishedDragging] = useState(false);
 
   const getTimeFromPosition = useCallback((clientX, trackRef = null) => {
     const ref = trackRef || timelineRef.current || clipTrackRef.current;
@@ -163,13 +164,23 @@ const Timeline = ({ currentTime, duration, inPoint, outPoint, onSeek, onSetInPoi
   }, [isDragging, isRangeSelecting, dragType, dragStartX, dragStartValue, duration, getTrackWidth, onSeek, onSetInPoint, onSetOutPoint, inPoint, outPoint, getTimeFromPosition, rangeStart, onMousePositionUpdate]);
 
   const handleMouseUp = useCallback(() => {
+    const wasDraggingHandle = dragType === 'in' || dragType === 'out';
+    
     setIsDragging(false);
     setDragType(null);
     setDragStartX(0);
     setDragStartValue(0);
     setDragTooltip({ show: false, x: 0, time: 0, type: '' });
     setIsRangeSelecting(false);
-  }, []);
+    
+    // If we were dragging an IN/OUT handle, prevent clicks for a brief moment
+    if (wasDraggingHandle) {
+      setJustFinishedDragging(true);
+      setTimeout(() => {
+        setJustFinishedDragging(false);
+      }, 100);
+    }
+  }, [dragType]);
 
   const handleMouseLeave = useCallback(() => {
     setShowTooltip({ show: false, x: 0, time: 0, type: '' });
@@ -185,10 +196,34 @@ const Timeline = ({ currentTime, duration, inPoint, outPoint, onSeek, onSetInPoi
     e.preventDefault();
     const time = getTimeFromPosition(e.clientX);
     
+    // Calculate smart positioning to keep menu visible
+    const menuWidth = 180; // Approximate width of context menu
+    const menuHeight = 160; // Approximate height of context menu
+    const padding = 10; // Padding from screen edge
+    
+    let x = e.clientX;
+    let y = e.clientY;
+    
+    // Adjust horizontal position if menu would go off-screen
+    if (x + menuWidth > window.innerWidth - padding) {
+      x = window.innerWidth - menuWidth - padding;
+    }
+    if (x < padding) {
+      x = padding;
+    }
+    
+    // Adjust vertical position if menu would go off-screen
+    if (y + menuHeight > window.innerHeight - padding) {
+      y = e.clientY - menuHeight;
+    }
+    if (y < padding) {
+      y = padding;
+    }
+    
     setContextMenu({
       show: true,
-      x: e.clientX,
-      y: e.clientY,
+      x: x,
+      y: y,
       time: time
     });
   }, [hasVideo, getTimeFromPosition]);
@@ -221,6 +256,11 @@ const Timeline = ({ currentTime, duration, inPoint, outPoint, onSeek, onSetInPoi
   const handleClipTrackClick = useCallback((e) => {
     if (!hasVideo) return;
     
+    // Don't seek if we just finished dragging IN/OUT handles
+    if (isDragging || dragType === 'in' || dragType === 'out' || justFinishedDragging) {
+      return;
+    }
+    
     // If shift is held, start range selection
     if (e.shiftKey) {
       handleMouseDown(e, 'range');
@@ -230,15 +270,9 @@ const Timeline = ({ currentTime, duration, inPoint, outPoint, onSeek, onSetInPoi
     // Otherwise, seek to clicked position
     const time = getTimeFromPosition(e.clientX);
     onSeek(time);
-  }, [hasVideo, handleMouseDown, getTimeFromPosition, onSeek]);
+  }, [hasVideo, isDragging, dragType, justFinishedDragging, handleMouseDown, getTimeFromPosition, onSeek]);
 
-  const handleSetInAtCurrent = useCallback(() => {
-    onSetInPoint(Math.min(currentTime, outPoint - 0.1));
-  }, [currentTime, outPoint, onSetInPoint]);
 
-  const handleSetOutAtCurrent = useCallback(() => {
-    onSetOutPoint(Math.max(currentTime, inPoint + 0.1));
-  }, [currentTime, inPoint, onSetOutPoint]);
   
   const handleClearInOut = useCallback(() => {
     onSetInPoint(0);
@@ -460,24 +494,6 @@ const Timeline = ({ currentTime, duration, inPoint, outPoint, onSeek, onSetInPoi
       {/* Enhanced Control Buttons */}
       {duration > 0 && (
         <div className="timeline-controls">
-          <button 
-            className="btn btn-sm btn-secondary"
-            onClick={handleSetInAtCurrent}
-            disabled={!hasVideo}
-            title="Set IN point at current playhead position (I)"
-          >
-            <span className="button-playhead-icon"></span>
-            Set IN Here
-          </button>
-          <button 
-            className="btn btn-sm btn-secondary"
-            onClick={handleSetOutAtCurrent}
-            disabled={!hasVideo}
-            title="Set OUT point at current playhead position (O)"
-          >
-            <span className="button-playhead-icon"></span>
-            Set OUT Here
-          </button>
           <button 
             className={`btn btn-sm ${isPreviewMode ? 'btn-primary preview-active' : 'btn-secondary'}`}
             onClick={() => onPreviewClip(inPoint, outPoint)}
