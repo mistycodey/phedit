@@ -1,14 +1,14 @@
 name: Build and Release Electron App
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
+    types: [closed]
     branches: [ main ]
 
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    if: github.event.pull_request.merged == true
     
     strategy:
       matrix:
@@ -82,7 +82,7 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.event.pull_request.merged == true
     
     steps:
     - name: Checkout code
@@ -91,6 +91,18 @@ jobs:
     - name: Get package version
       id: package-version
       run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+      
+    - name: Get current date
+      id: date
+      run: echo "date=$(date +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_OUTPUT
+      
+    - name: Get PR info
+      id: pr-info
+      run: |
+        echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+        echo "pr_title=${{ github.event.pull_request.title }}" >> $GITHUB_OUTPUT
+        echo "pr_author=${{ github.event.pull_request.user.login }}" >> $GITHUB_OUTPUT
+        echo "commit_short=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
       
     - name: Download all artifacts
       uses: actions/download-artifact@v4
@@ -106,21 +118,63 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: v${{ steps.package-version.outputs.version }}-${{ github.run_number }}
-        release_name: PHEdit v${{ steps.package-version.outputs.version }} Build ${{ github.run_number }}
+        tag_name: v${{ steps.package-version.outputs.version }}-build.${{ github.run_number }}
+        release_name: PHEdit v${{ steps.package-version.outputs.version }} - Build ${{ github.run_number }}
         body: |
-          ## PHEdit v${{ steps.package-version.outputs.version }}
+          ## 🚀 PHEdit v${{ steps.package-version.outputs.version }} - Build ${{ github.run_number }}
           
-          Automated build from commit: ${{ github.sha }}
+          **Built on:** ${{ steps.date.outputs.date }}  
+          **From PR:** #${{ steps.pr-info.outputs.pr_number }} - ${{ steps.pr-info.outputs.pr_title }}  
+          **Author:** @${{ steps.pr-info.outputs.pr_author }}  
+          **Commit:** [`${{ steps.pr-info.outputs.commit_short }}`](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
           
-          ### Changes
-          - Built from latest main branch
-          - Cross-platform builds for Windows, macOS, and Linux
+          ---
           
-          ### Downloads
-          - **Windows**: Download the `.exe` file
-          - **macOS**: Download the `.dmg` file  
-          - **Linux**: Download the `.AppImage` file
+          ### 📥 Downloads
+          
+          Choose the appropriate installer for your operating system:
+          
+          | Platform | Download | Size |
+          |----------|----------|------|
+          | 🪟 **Windows** | [PHEdit-Setup-${{ steps.package-version.outputs.version }}-Windows.exe](https://github.com/${{ github.repository }}/releases/download/v${{ steps.package-version.outputs.version }}-build.${{ github.run_number }}/PHEdit-Setup-${{ steps.package-version.outputs.version }}-Windows.exe) | Windows Installer |
+          | 🍎 **macOS** | [PHEdit-${{ steps.package-version.outputs.version }}-macOS.dmg](https://github.com/${{ github.repository }}/releases/download/v${{ steps.package-version.outputs.version }}-build.${{ github.run_number }}/PHEdit-${{ steps.package-version.outputs.version }}-macOS.dmg) | Disk Image |
+          | 🐧 **Linux** | [PHEdit-${{ steps.package-version.outputs.version }}-Linux.AppImage](https://github.com/${{ github.repository }}/releases/download/v${{ steps.package-version.outputs.version }}-build.${{ github.run_number }}/PHEdit-${{ steps.package-version.outputs.version }}-Linux.AppImage) | AppImage |
+          
+          ### 🔧 Installation Instructions
+          
+          #### Step 1: Install FFmpeg (Required)
+          
+          **⚠️ Important**: PHEdit requires FFmpeg (specifically ffmpeg and ffprobe) to be installed on your system before it can function properly.
+          
+          - **Download FFmpeg**: [https://ffmpeg.org/download.html](https://ffmpeg.org/download.html)
+          - **Windows**: Download the Windows build and add it to your system PATH
+          - **macOS**: Install via Homebrew: `brew install ffmpeg`
+          - **Linux**: Install via package manager: `sudo apt install ffmpeg` (Ubuntu/Debian) or `sudo yum install ffmpeg` (RHEL/CentOS)
+          
+          #### Step 2: Install PHEdit
+          
+          - **Windows**: Download and run the `.exe` file
+          - **macOS**: Download the `.dmg`, open it, and drag PHEdit to Applications
+          - **Linux**: Download the `.AppImage`, make it executable (`chmod +x`), and run it
+          
+          ### 📋 What's New
+          
+          This build includes the latest changes merged from the development branch:
+          - ✅ Cross-platform compatibility (Windows, macOS, Linux)
+          - ✅ Latest bug fixes and improvements
+          - ✅ Built with Electron ${{ matrix.electron-version || 'latest' }}
+          
+          ### 🐛 Issues?
+          
+          **Common Issues:**
+          - **"FFmpeg not found" error**: Make sure FFmpeg is installed and accessible in your system PATH
+          - **Video processing fails**: Verify that both `ffmpeg` and `ffprobe` commands work in your terminal
+          
+          If you encounter any problems, please [open an issue](https://github.com/${{ github.repository }}/issues/new) with:
+          - Your operating system and version
+          - FFmpeg version (`ffmpeg -version`)
+          - Steps to reproduce the issue
+          - Any error messages you see
           
         draft: false
         prerelease: false

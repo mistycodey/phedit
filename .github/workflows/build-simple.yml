@@ -1,12 +1,14 @@
 name: Build Electron App (Simple)
 
 on:
-  push:
+  pull_request:
+    types: [closed]
     branches: [ main ]
 
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    if: github.event.pull_request.merged == true
     
     strategy:
       matrix:
