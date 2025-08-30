@@ -53,6 +53,40 @@
       "build/**/*",
       "public/electron.js",
       "node_modules/**/*"
-    ]
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "icon": "build/icon.icns",
+      "category": "public.app-category.video"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.png",
+      "category": "AudioVideo"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "mistycodey",
+      "repo": "phedit"
+    }
   }
 }

@@ -1,0 +1,210 @@
+name: Build and Release Electron App
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    if: github.event.pull_request.merged == true
+    
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build React app
+      run: npm run build
+      
+    - name: Build Electron app (Windows)
+      if: matrix.os == 'windows-latest'
+      run: npm run electron-pack
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Build Electron app (macOS)
+      if: matrix.os == 'macos-latest'
+      run: npm run electron-pack
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        CSC_IDENTITY_AUTO_DISCOVERY: false
+        
+    - name: Build Electron app (Linux)
+      if: matrix.os == 'ubuntu-latest'
+      run: npm run electron-pack
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Upload Windows artifacts
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-build
+        path: |
+          dist/*.exe
+          dist/*.exe.blockmap
+          dist/latest.yml
+          
+    - name: Upload macOS artifacts
+      if: matrix.os == 'macos-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-build
+        path: |
+          dist/*.dmg
+          dist/*.dmg.blockmap
+          dist/latest-mac.yml
+          
+    - name: Upload Linux artifacts
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-build
+        path: |
+          dist/*.AppImage
+          dist/*.AppImage.blockmap
+          dist/latest-linux.yml
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Get package version
+      id: package-version
+      run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+      
+    - name: Get current date
+      id: date
+      run: echo "date=$(date +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_OUTPUT
+      
+    - name: Get PR info
+      id: pr-info
+      run: |
+        echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+        echo "pr_title=${{ github.event.pull_request.title }}" >> $GITHUB_OUTPUT
+        echo "pr_author=${{ github.event.pull_request.user.login }}" >> $GITHUB_OUTPUT
+        echo "commit_short=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
+      
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+        
+    - name: Display artifact structure
+      run: ls -la artifacts/
+      
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ steps.package-version.outputs.version }}-build.${{ github.run_number }}
+        release_name: PHEdit v${{ steps.package-version.outputs.version }} - Build ${{ github.run_number }}
+        body: |
+          ## 🚀 PHEdit v${{ steps.package-version.outputs.version }} - Build ${{ github.run_number }}
+          
+          **Built on:** ${{ steps.date.outputs.date }}  
+          **From PR:** #${{ steps.pr-info.outputs.pr_number }} - ${{ steps.pr-info.outputs.pr_title }}  
+          **Author:** @${{ steps.pr-info.outputs.pr_author }}  
+          **Commit:** [`${{ steps.pr-info.outputs.commit_short }}`](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
+          
+          ---
+          
+          ### 📥 Downloads
+          
+          Choose the appropriate installer for your operating system:
+          
+          | Platform | Download | Size |
+          |----------|----------|------|
+          | 🪟 **Windows** | [PHEdit-Setup-${{ steps.package-version.outputs.version }}-Windows.exe](https://github.com/${{ github.repository }}/releases/download/v${{ steps.package-version.outputs.version }}-build.${{ github.run_number }}/PHEdit-Setup-${{ steps.package-version.outputs.version }}-Windows.exe) | Windows Installer |
+          | 🍎 **macOS** | [PHEdit-${{ steps.package-version.outputs.version }}-macOS.dmg](https://github.com/${{ github.repository }}/releases/download/v${{ steps.package-version.outputs.version }}-build.${{ github.run_number }}/PHEdit-${{ steps.package-version.outputs.version }}-macOS.dmg) | Disk Image |
+          | 🐧 **Linux** | [PHEdit-${{ steps.package-version.outputs.version }}-Linux.AppImage](https://github.com/${{ github.repository }}/releases/download/v${{ steps.package-version.outputs.version }}-build.${{ github.run_number }}/PHEdit-${{ steps.package-version.outputs.version }}-Linux.AppImage) | AppImage |
+          
+          ### 🔧 Installation Instructions
+          
+          #### Step 1: Install FFmpeg (Required)
+          
+          **⚠️ Important**: PHEdit requires FFmpeg (specifically ffmpeg and ffprobe) to be installed on your system before it can function properly.
+          
+          - **Download FFmpeg**: [https://ffmpeg.org/download.html](https://ffmpeg.org/download.html)
+          - **Windows**: Download the Windows build and add it to your system PATH
+          - **macOS**: Install via Homebrew: `brew install ffmpeg`
+          - **Linux**: Install via package manager: `sudo apt install ffmpeg` (Ubuntu/Debian) or `sudo yum install ffmpeg` (RHEL/CentOS)
+          
+          #### Step 2: Install PHEdit
+          
+          - **Windows**: Download and run the `.exe` file
+          - **macOS**: Download the `.dmg`, open it, and drag PHEdit to Applications
+          - **Linux**: Download the `.AppImage`, make it executable (`chmod +x`), and run it
+          
+          ### 📋 What's New
+          
+          This build includes the latest changes merged from the development branch:
+          - ✅ Cross-platform compatibility (Windows, macOS, Linux)
+          - ✅ Latest bug fixes and improvements
+          - ✅ Built with Electron ${{ matrix.electron-version || 'latest' }}
+          
+          ### 🐛 Issues?
+          
+          **Common Issues:**
+          - **"FFmpeg not found" error**: Make sure FFmpeg is installed and accessible in your system PATH
+          - **Video processing fails**: Verify that both `ffmpeg` and `ffprobe` commands work in your terminal
+          
+          If you encounter any problems, please [open an issue](https://github.com/${{ github.repository }}/issues/new) with:
+          - Your operating system and version
+          - FFmpeg version (`ffmpeg -version`)
+          - Steps to reproduce the issue
+          - Any error messages you see
+          
+        draft: false
+        prerelease: false
+        
+    - name: Upload Windows Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: artifacts/windows-build/PHEdit Setup ${{ steps.package-version.outputs.version }}.exe
+        asset_name: PHEdit-Setup-${{ steps.package-version.outputs.version }}-Windows.exe
+        asset_content_type: application/octet-stream
+        
+    - name: Upload macOS Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: artifacts/macos-build/PHEdit-${{ steps.package-version.outputs.version }}.dmg
+        asset_name: PHEdit-${{ steps.package-version.outputs.version }}-macOS.dmg
+        asset_content_type: application/octet-stream
+        
+    - name: Upload Linux Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: artifacts/linux-build/PHEdit-${{ steps.package-version.outputs.version }}.AppImage
+        asset_name: PHEdit-${{ steps.package-version.outputs.version }}-Linux.AppImage
+        asset_content_type: application/octet-stream
