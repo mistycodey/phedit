@@ -5,6 +5,11 @@ on:
     types: [closed]
     branches: [ main ]
 
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -87,10 +92,38 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
-    - name: Get package version
-      id: package-version
-      run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Get and increment version
+      id: version
+      run: |
+        # Get current version
+        CURRENT_VERSION=$(node -p "require('./package.json').version")
+        echo "Current version: $CURRENT_VERSION"
+        
+        # Increment version
+        NEW_VERSION=$((CURRENT_VERSION + 1))
+        echo "New version: $NEW_VERSION"
+        
+        # Update package.json
+        node -e "
+          const fs = require('fs');
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          pkg.version = '$NEW_VERSION';
+          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+        "
+        
+        # Output the new version
+        echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+        
+    - name: Commit version bump
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add package.json
+        git commit -m "Bump version to ${{ steps.version.outputs.version }}" || echo "No changes to commit"
+        git push || echo "No changes to push"
       
     - name: Get current date
       id: date
@@ -110,18 +143,26 @@ jobs:
         path: artifacts
         
     - name: Display artifact structure
-      run: ls -la artifacts/
+      run: |
+        echo "=== Artifacts directory structure ==="
+        ls -la artifacts/
+        echo "=== Windows artifacts ==="
+        ls -la artifacts/windows-build/ || echo "No Windows artifacts found"
+        echo "=== macOS artifacts ==="
+        ls -la artifacts/macos-build/ || echo "No macOS artifacts found"
+        echo "=== Linux artifacts ==="
+        ls -la artifacts/linux-build/ || echo "No Linux artifacts found"
       
     - name: Create Release
       id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v1
       with:
-        tag_name: v${{ steps.package-version.outputs.version }}-build.${{ github.run_number }}
-        release_name: PHEdit v${{ steps.package-version.outputs.version }} - Build ${{ github.run_number }}
+        tag_name: v${{ steps.version.outputs.version }}
+        name: PHEdit v${{ steps.version.outputs.version }}
+        draft: false
+        prerelease: false
         body: |
-          ## 🚀 PHEdit v${{ steps.package-version.outputs.version }} - Build ${{ github.run_number }}
+          ## 🚀 PHEdit v${{ steps.version.outputs.version }}
           
           **Built on:** ${{ steps.date.outputs.date }}  
           **From PR:** #${{ steps.pr-info.outputs.pr_number }} - ${{ steps.pr-info.outputs.pr_title }}  
@@ -136,9 +177,9 @@ jobs:
           
           | Platform | Download | Size |
           |----------|----------|------|
-          | 🪟 **Windows** | [PHEdit-Setup-${{ steps.package-version.outputs.version }}-Windows.exe](https://github.com/${{ github.repository }}/releases/download/v${{ steps.package-version.outputs.version }}-build.${{ github.run_number }}/PHEdit-Setup-${{ steps.package-version.outputs.version }}-Windows.exe) | Windows Installer |
-          | 🍎 **macOS** | [PHEdit-${{ steps.package-version.outputs.version }}-macOS.dmg](https://github.com/${{ github.repository }}/releases/download/v${{ steps.package-version.outputs.version }}-build.${{ github.run_number }}/PHEdit-${{ steps.package-version.outputs.version }}-macOS.dmg) | Disk Image |
-          | 🐧 **Linux** | [PHEdit-${{ steps.package-version.outputs.version }}-Linux.AppImage](https://github.com/${{ github.repository }}/releases/download/v${{ steps.package-version.outputs.version }}-build.${{ github.run_number }}/PHEdit-${{ steps.package-version.outputs.version }}-Linux.AppImage) | AppImage |
+          | 🪟 **Windows** | [PHEdit-Setup-${{ steps.version.outputs.version }}-Windows.exe](https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/PHEdit-Setup-${{ steps.version.outputs.version }}-Windows.exe) | Windows Installer |
+          | 🍎 **macOS** | [PHEdit-${{ steps.version.outputs.version }}-macOS.dmg](https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/PHEdit-${{ steps.version.outputs.version }}-macOS.dmg) | Disk Image |
+          | 🐧 **Linux** | [PHEdit-${{ steps.version.outputs.version }}-Linux.AppImage](https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/PHEdit-${{ steps.version.outputs.version }}-Linux.AppImage) | AppImage |
           
           ### 🔧 Installation Instructions
           
@@ -176,35 +217,8 @@ jobs:
           - Steps to reproduce the issue
           - Any error messages you see
           
-        draft: false
-        prerelease: false
-        
-    - name: Upload Windows Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: artifacts/windows-build/PHEdit Setup ${{ steps.package-version.outputs.version }}.exe
-        asset_name: PHEdit-Setup-${{ steps.package-version.outputs.version }}-Windows.exe
-        asset_content_type: application/octet-stream
-        
-    - name: Upload macOS Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: artifacts/macos-build/PHEdit-${{ steps.package-version.outputs.version }}.dmg
-        asset_name: PHEdit-${{ steps.package-version.outputs.version }}-macOS.dmg
-        asset_content_type: application/octet-stream
-        
-    - name: Upload Linux Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: artifacts/linux-build/PHEdit-${{ steps.package-version.outputs.version }}.AppImage
-        asset_name: PHEdit-${{ steps.package-version.outputs.version }}-Linux.AppImage
-        asset_content_type: application/octet-stream
+        files: |
+          artifacts/windows-build/*.exe
+          artifacts/macos-build/*.dmg
+          artifacts/linux-build/*.AppImage
+        fail_on_unmatched_files: false
