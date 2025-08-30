@@ -1,6 +1,6 @@
 {
   "name": "phedit",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "A minimal FFmpeg video editor built with Electron and React",
   "main": "public/electron.js",
   "homepage": "./",
@@ -14,7 +14,13 @@
     "electron-pack": "electron-builder",
     "preelectron-pack": "npm run build"
   },
-  "keywords": ["video", "editor", "ffmpeg", "electron", "react"],
+  "keywords": [
+    "video",
+    "editor",
+    "ffmpeg",
+    "electron",
+    "react"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -58,7 +64,9 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "build/icon.ico"
@@ -67,7 +75,10 @@
       "target": [
         {
           "target": "dmg",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         }
       ],
       "icon": "build/icon.icns",
@@ -77,7 +88,9 @@
       "target": [
         {
           "target": "AppImage",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "build/icon.png",
