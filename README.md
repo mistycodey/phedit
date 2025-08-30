@@ -3,6 +3,14 @@
 A minimal video editor built with Electron and React, powered by FFmpeg for video processing.
 This is a hobby project that just uses AI in the Cursor IDE to create the code. Half challenge, half helpful :)
 
+<img width="829" height="650" alt="image" src="https://github.com/user-attachments/assets/cd5688d5-75b5-46e1-bcc5-050f1da347b3" />
+
+<img width="1175" height="755" alt="image" src="https://github.com/user-attachments/assets/9d619f9e-de37-49b1-aaa7-761a17d060d1" />
+
+<img width="1599" height="730" alt="image" src="https://github.com/user-attachments/assets/4acddb39-ec81-4283-8940-471253ac5fc6" />
+
+<img width="1574" height="656" alt="image" src="https://github.com/user-attachments/assets/325d58b5-624d-4abf-96df-c83769f490d6" />
+
 ## Features
 
 ### Startup & Mode Selection
