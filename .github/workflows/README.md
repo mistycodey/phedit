@@ -12,13 +12,6 @@ This directory contains GitHub Actions workflows for automating the build and re
   - Uploads build artifacts to releases
   - Includes version tagging
 
-### 2. `build-simple.yml` - Simple Build Pipeline  
-- **Triggers**: Push to main branch only
-- **Features**:
-  - Builds for Windows, macOS, and Linux
-  - Uploads artifacts (no releases)
-  - Simpler setup, good for testing
-
 ## Setup Instructions
 
 ### 1. Choose Your Workflow
