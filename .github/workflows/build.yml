@@ -1,0 +1,156 @@
+name: Build and Release Electron App
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build React app
+      run: npm run build
+      
+    - name: Build Electron app (Windows)
+      if: matrix.os == 'windows-latest'
+      run: npm run electron-pack
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Build Electron app (macOS)
+      if: matrix.os == 'macos-latest'
+      run: npm run electron-pack
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        CSC_IDENTITY_AUTO_DISCOVERY: false
+        
+    - name: Build Electron app (Linux)
+      if: matrix.os == 'ubuntu-latest'
+      run: npm run electron-pack
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Upload Windows artifacts
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-build
+        path: |
+          dist/*.exe
+          dist/*.exe.blockmap
+          dist/latest.yml
+          
+    - name: Upload macOS artifacts
+      if: matrix.os == 'macos-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-build
+        path: |
+          dist/*.dmg
+          dist/*.dmg.blockmap
+          dist/latest-mac.yml
+          
+    - name: Upload Linux artifacts
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-build
+        path: |
+          dist/*.AppImage
+          dist/*.AppImage.blockmap
+          dist/latest-linux.yml
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Get package version
+      id: package-version
+      run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+      
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+        
+    - name: Display artifact structure
+      run: ls -la artifacts/
+      
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ steps.package-version.outputs.version }}-${{ github.run_number }}
+        release_name: PHEdit v${{ steps.package-version.outputs.version }} Build ${{ github.run_number }}
+        body: |
+          ## PHEdit v${{ steps.package-version.outputs.version }}
+          
+          Automated build from commit: ${{ github.sha }}
+          
+          ### Changes
+          - Built from latest main branch
+          - Cross-platform builds for Windows, macOS, and Linux
+          
+          ### Downloads
+          - **Windows**: Download the `.exe` file
+          - **macOS**: Download the `.dmg` file  
+          - **Linux**: Download the `.AppImage` file
+          
+        draft: false
+        prerelease: false
+        
+    - name: Upload Windows Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: artifacts/windows-build/PHEdit Setup ${{ steps.package-version.outputs.version }}.exe
+        asset_name: PHEdit-Setup-${{ steps.package-version.outputs.version }}-Windows.exe
+        asset_content_type: application/octet-stream
+        
+    - name: Upload macOS Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: artifacts/macos-build/PHEdit-${{ steps.package-version.outputs.version }}.dmg
+        asset_name: PHEdit-${{ steps.package-version.outputs.version }}-macOS.dmg
+        asset_content_type: application/octet-stream
+        
+    - name: Upload Linux Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: artifacts/linux-build/PHEdit-${{ steps.package-version.outputs.version }}.AppImage
+        asset_name: PHEdit-${{ steps.package-version.outputs.version }}-Linux.AppImage
+        asset_content_type: application/octet-stream
