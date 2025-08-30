@@ -1,6 +1,7 @@
 # PHEdit - Minimal FFmpeg Video Editor
 
 A minimal video editor built with Electron and React, powered by FFmpeg for video processing.
+This is a hobby project that just uses AI in the Cursor IDE to create the code. Half challenge, half helpful :)
 
 ## Features
 
