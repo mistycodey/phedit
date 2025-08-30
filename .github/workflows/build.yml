@@ -11,7 +11,56 @@ permissions:
   pull-requests: write
 
 jobs:
+  version:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      major_version: ${{ steps.version.outputs.major_version }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Get and increment version
+      id: version
+      run: |
+        # Get current version
+        CURRENT_VERSION=$(node -p "require('./package.json').version")
+        echo "Current version: $CURRENT_VERSION"
+        
+        # Extract major version number (e.g., "3.0.0" -> "3")
+        MAJOR_VERSION=$(echo $CURRENT_VERSION | cut -d. -f1)
+        echo "Current major version: $MAJOR_VERSION"
+        
+        # Increment major version
+        NEW_MAJOR_VERSION=$((MAJOR_VERSION + 1))
+        NEW_VERSION="${NEW_MAJOR_VERSION}.0.0"
+        echo "New version: $NEW_VERSION"
+        
+        # Update package.json
+        node -e "
+          const fs = require('fs');
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          pkg.version = '$NEW_VERSION';
+          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+        "
+        
+        # Output both the full version and just the major number for tags
+        echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+        echo "major_version=$NEW_MAJOR_VERSION" >> $GITHUB_OUTPUT
+        
+    - name: Commit version bump
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add package.json
+        git commit -m "Bump version to ${{ steps.version.outputs.version }}" || echo "No changes to commit"
+        git push || echo "No changes to push"
+
   build:
+    needs: version
     runs-on: ${{ matrix.os }}
     if: github.event.pull_request.merged == true
     
@@ -22,6 +71,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        ref: main  # Make sure we get the updated version
       
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -85,51 +136,13 @@ jobs:
           dist/latest-linux.yml
 
   release:
-    needs: build
+    needs: [version, build]
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged == true
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        
-    - name: Get and increment version
-      id: version
-      run: |
-        # Get current version
-        CURRENT_VERSION=$(node -p "require('./package.json').version")
-        echo "Current version: $CURRENT_VERSION"
-        
-        # Extract major version number (e.g., "2.0.0" -> "2")
-        MAJOR_VERSION=$(echo $CURRENT_VERSION | cut -d. -f1)
-        echo "Current major version: $MAJOR_VERSION"
-        
-        # Increment major version
-        NEW_MAJOR_VERSION=$((MAJOR_VERSION + 1))
-        NEW_VERSION="${NEW_MAJOR_VERSION}.0.0"
-        echo "New version: $NEW_VERSION"
-        
-        # Update package.json
-        node -e "
-          const fs = require('fs');
-          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-          pkg.version = '$NEW_VERSION';
-          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
-        "
-        
-        # Output both the full version and just the major number for tags
-        echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-        echo "major_version=$NEW_MAJOR_VERSION" >> $GITHUB_OUTPUT
-        
-    - name: Commit version bump
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add package.json
-        git commit -m "Bump version to ${{ steps.version.outputs.version }}" || echo "No changes to commit"
-        git push || echo "No changes to push"
       
     - name: Get current date
       id: date
@@ -163,12 +176,12 @@ jobs:
       id: create_release
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: v${{ steps.version.outputs.major_version }}
-        name: PHEdit v${{ steps.version.outputs.major_version }}
+        tag_name: v${{ needs.version.outputs.major_version }}
+        name: PHEdit v${{ needs.version.outputs.major_version }}
         draft: false
         prerelease: false
         body: |
-          ## 🚀 PHEdit v${{ steps.version.outputs.major_version }}
+          ## 🚀 PHEdit v${{ needs.version.outputs.major_version }}
           
           **Built on:** ${{ steps.date.outputs.date }}  
           **From PR:** #${{ steps.pr-info.outputs.pr_number }} - ${{ steps.pr-info.outputs.pr_title }}  
@@ -183,9 +196,9 @@ jobs:
           
           | Platform | Download | Size |
           |----------|----------|------|
-          | 🪟 **Windows** | [PHEdit-Setup-${{ steps.version.outputs.version }}-Windows.exe](https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.major_version }}/PHEdit-Setup-${{ steps.version.outputs.version }}-Windows.exe) | Windows Installer |
-          | 🍎 **macOS** | [PHEdit-${{ steps.version.outputs.version }}-macOS.dmg](https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.major_version }}/PHEdit-${{ steps.version.outputs.version }}-macOS.dmg) | Disk Image |
-          | 🐧 **Linux** | [PHEdit-${{ steps.version.outputs.version }}-Linux.AppImage](https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.major_version }}/PHEdit-${{ steps.version.outputs.version }}-Linux.AppImage) | AppImage |
+          | 🪟 **Windows** | [PHEdit-Setup-${{ needs.version.outputs.version }}-Windows.exe](https://github.com/${{ github.repository }}/releases/download/v${{ needs.version.outputs.major_version }}/PHEdit-Setup-${{ needs.version.outputs.version }}-Windows.exe) | Windows Installer |
+          | 🍎 **macOS** | [PHEdit-${{ needs.version.outputs.version }}-macOS.dmg](https://github.com/${{ github.repository }}/releases/download/v${{ needs.version.outputs.major_version }}/PHEdit-${{ needs.version.outputs.version }}-macOS.dmg) | Disk Image |
+          | 🐧 **Linux** | [PHEdit-${{ needs.version.outputs.version }}-Linux.AppImage](https://github.com/${{ github.repository }}/releases/download/v${{ needs.version.outputs.major_version }}/PHEdit-${{ needs.version.outputs.version }}-Linux.AppImage) | AppImage |
           
           ### 🔧 Installation Instructions
           
