@@ -102,8 +102,13 @@ jobs:
         CURRENT_VERSION=$(node -p "require('./package.json').version")
         echo "Current version: $CURRENT_VERSION"
         
-        # Increment version
-        NEW_VERSION=$((CURRENT_VERSION + 1))
+        # Extract major version number (e.g., "2.0.0" -> "2")
+        MAJOR_VERSION=$(echo $CURRENT_VERSION | cut -d. -f1)
+        echo "Current major version: $MAJOR_VERSION"
+        
+        # Increment major version
+        NEW_MAJOR_VERSION=$((MAJOR_VERSION + 1))
+        NEW_VERSION="${NEW_MAJOR_VERSION}.0.0"
         echo "New version: $NEW_VERSION"
         
         # Update package.json
@@ -114,8 +119,9 @@ jobs:
           fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
         "
         
-        # Output the new version
+        # Output both the full version and just the major number for tags
         echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+        echo "major_version=$NEW_MAJOR_VERSION" >> $GITHUB_OUTPUT
         
     - name: Commit version bump
       run: |
@@ -157,12 +163,12 @@ jobs:
       id: create_release
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: v${{ steps.version.outputs.version }}
-        name: PHEdit v${{ steps.version.outputs.version }}
+        tag_name: v${{ steps.version.outputs.major_version }}
+        name: PHEdit v${{ steps.version.outputs.major_version }}
         draft: false
         prerelease: false
         body: |
-          ## 🚀 PHEdit v${{ steps.version.outputs.version }}
+          ## 🚀 PHEdit v${{ steps.version.outputs.major_version }}
           
           **Built on:** ${{ steps.date.outputs.date }}  
           **From PR:** #${{ steps.pr-info.outputs.pr_number }} - ${{ steps.pr-info.outputs.pr_title }}  
@@ -177,9 +183,9 @@ jobs:
           
           | Platform | Download | Size |
           |----------|----------|------|
-          | 🪟 **Windows** | [PHEdit-Setup-${{ steps.version.outputs.version }}-Windows.exe](https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/PHEdit-Setup-${{ steps.version.outputs.version }}-Windows.exe) | Windows Installer |
-          | 🍎 **macOS** | [PHEdit-${{ steps.version.outputs.version }}-macOS.dmg](https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/PHEdit-${{ steps.version.outputs.version }}-macOS.dmg) | Disk Image |
-          | 🐧 **Linux** | [PHEdit-${{ steps.version.outputs.version }}-Linux.AppImage](https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/PHEdit-${{ steps.version.outputs.version }}-Linux.AppImage) | AppImage |
+          | 🪟 **Windows** | [PHEdit-Setup-${{ steps.version.outputs.version }}-Windows.exe](https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.major_version }}/PHEdit-Setup-${{ steps.version.outputs.version }}-Windows.exe) | Windows Installer |
+          | 🍎 **macOS** | [PHEdit-${{ steps.version.outputs.version }}-macOS.dmg](https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.major_version }}/PHEdit-${{ steps.version.outputs.version }}-macOS.dmg) | Disk Image |
+          | 🐧 **Linux** | [PHEdit-${{ steps.version.outputs.version }}-Linux.AppImage](https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.major_version }}/PHEdit-${{ steps.version.outputs.version }}-Linux.AppImage) | AppImage |
           
           ### 🔧 Installation Instructions
           
