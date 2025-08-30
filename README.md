@@ -35,7 +35,7 @@ Before running this application, you need to have FFmpeg installed on your syste
 ### Windows
 1. Download FFmpeg from https://ffmpeg.org/download.html
 2. Extract the files to a folder (e.g., `C:\ffmpeg`)
-3. Add the `bin` folder to your system PATH environment variable
+3. Add the `bin` folder to your system PATH environment variable, or choose the paths to ffmpeg and ffprobe in the Settings area once the app has started.
 
 ### macOS
 ```bash
