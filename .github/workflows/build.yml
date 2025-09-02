@@ -97,7 +97,21 @@ jobs:
       run: npm run electron-pack
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # For proper code signing, you need to set these secrets in your GitHub repository:
+        # CSC_LINK: ${{ secrets.CSC_LINK }}           # Base64 encoded .p12 certificate
+        # CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }} # Certificate password
+        # APPLE_ID: ${{ secrets.APPLE_ID }}           # Apple ID for notarization
+        # APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }} # App-specific password
+        # APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }} # Apple Developer Team ID
+        
+        # Temporarily disable code signing (remove these lines once you have certificates)
         CSC_IDENTITY_AUTO_DISCOVERY: false
+        # Uncomment these when you have proper certificates:
+        # CSC_LINK: ${{ secrets.CSC_LINK }}
+        # CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+        # APPLE_ID: ${{ secrets.APPLE_ID }}
+        # APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+        # APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         
     - name: Build Electron app (Linux)
       if: matrix.os == 'ubuntu-latest'

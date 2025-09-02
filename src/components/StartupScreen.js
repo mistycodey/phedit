@@ -89,7 +89,7 @@ const StartupScreen = ({ onModeSelect }) => {
   return (
     <div className="startup-screen">
       <div className="startup-content">
-        <div className="startup-icon">🎬</div>
+        <div className="startup-icon">🎞️</div>
         <h1>PHEdit</h1>
         <p>Select mode:</p>
         

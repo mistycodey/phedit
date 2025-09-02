@@ -256,11 +256,15 @@ const Controls = ({
           </div>
           <div className="control-row export-buttons">
             <button 
-              className="btn btn-danger" 
+              className="btn btn-success" 
               onClick={onExport}
               disabled={!hasVideo || isProcessing || clipDuration <= 0}
             >
-              {isProcessing ? 'Processing...' : `Export ${exportType === 'audio' ? 'Audio' : 'Video'}`}
+              {isProcessing ? (
+                <>⏳ Processing...</>
+              ) : (
+                <>{exportType === 'audio' ? '🎧 Export Audio' : '🎬 Export Video'}</>
+              )}
             </button>
             
             {isProcessing && (
@@ -268,7 +272,7 @@ const Controls = ({
                 className="btn btn-secondary" 
                 onClick={onCancelExport}
               >
-                Cancel
+                ❌ Cancel
               </button>
             )}
           </div>

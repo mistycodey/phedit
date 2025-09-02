@@ -40,6 +40,7 @@ function App() {
   const [exportQuality, setExportQuality] = useState('high'); // 'low', 'medium', 'high'
   const [exportSize, setExportSize] = useState(100); // percentage of original size
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isPreparing, setIsPreparing] = useState(false);
   const [processingProgress, setProcessingProgress] = useState(0);
   const [outputFilePath, setOutputFilePath] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
@@ -85,16 +86,24 @@ function App() {
   useEffect(() => {
     // Listen for processing events
     ipcRenderer.on('processing-started', () => {
+      setIsPreparing(false); // Clear preparing state when actual processing starts
       setIsProcessing(true);
       setProcessingProgress(0);
     });
 
     ipcRenderer.on('processing-progress', (event, progress) => {
-      setProcessingProgress(progress.percent || 0);
+      console.log('Received progress from backend:', progress);
+      // Only update if we have a valid progress value, otherwise keep the current value
+      if (progress && typeof progress.percent === 'number' && !isNaN(progress.percent)) {
+        setProcessingProgress(progress.percent);
+      } else {
+        console.log('Invalid progress received, keeping current value');
+      }
     });
 
     ipcRenderer.on('processing-cancelled', () => {
       setIsProcessing(false);
+      setIsPreparing(false); // Clear preparing state when cancelled
       setProcessingProgress(0);
       showInfoModal('Export Cancelled', 'The export process was cancelled successfully.', 'info');
     });
@@ -507,6 +516,8 @@ function App() {
         return;
       }
 
+      // Show preparing modal immediately after save dialog is confirmed
+      setIsPreparing(true);
       setOutputFilePath(result.filePath);
 
       console.log('Starting export with parameters:', {
@@ -543,6 +554,7 @@ function App() {
       
       console.log('Export completed:', exportResult);
       setIsProcessing(false);
+      setIsPreparing(false);
       setOutputFilePath(null);
       const fileType = exportType === 'audio' ? 'Audio' : 'Video';
       
@@ -573,12 +585,22 @@ function App() {
         showInfoModal('Export Error', `Failed to export: ${error.message}`, 'error');
       }
       setIsProcessing(false);
+      setIsPreparing(false);
       setOutputFilePath(null);
     }
   };
 
   const handleCancelExport = async () => {
     try {
+      // If we're still in preparing phase, just reset states
+      if (isPreparing && !isProcessing) {
+        setIsPreparing(false);
+        setOutputFilePath(null);
+        showInfoModal('Export Cancelled', 'The export preparation was cancelled.', 'info');
+        return;
+      }
+      
+      // Otherwise, cancel the actual export process
       const result = await ipcRenderer.invoke('cancel-export');
       if (!result.success) {
         showInfoModal('Cancel Error', result.message, 'warning');
@@ -631,13 +653,13 @@ function App() {
             ← Menu
           </button>
           <button className="btn btn-secondary" onClick={() => setShowHelp(true)}>
-            Help
+            ❓ Help
           </button>
           <button className="btn btn-secondary" onClick={() => setShowSettings(true)}>
-            Settings
+            ⚙️ Settings
           </button>
           <button className="btn" onClick={handleLoadVideo}>
-            Load Video
+            📁 Load Video
           </button>
         </div>
       </div>
@@ -673,7 +695,7 @@ function App() {
           ) : (
             <div className="no-video">
               <div className="no-video-content">
-                <div className="no-video-icon">📹</div>
+                <div className="no-video-icon">🎬</div>
                 <h3>No Video Loaded</h3>
                 <p>Click "Load Video" to get started</p>
                 <p className="no-video-hint">All controls will be enabled once you load a video file</p>
@@ -710,7 +732,7 @@ function App() {
             onExportSizeChange={setExportSize}
             onExport={handleExport}
             onCancelExport={handleCancelExport}
-            isProcessing={isProcessing}
+            isProcessing={isProcessing || isPreparing}
             processingProgress={processingProgress}
             formatTime={formatTime}
             hasVideo={!!videoFile}
@@ -760,15 +782,16 @@ function App() {
       />
 
       <ExportProgressOverlay
-        isVisible={isProcessing}
+        isVisible={isProcessing || isPreparing}
         progress={processingProgress}
+        isPreparing={isPreparing}
         exportType={exportType}
         onCancel={handleCancelExport}
         sourceFile={videoFileName || 'Unknown'}
         outputFile={outputFilePath ? path.basename(outputFilePath) : 'Not started'}
         exportOptions={isProcessing ? {
           startTime: inPoint,
-          duration: outPoint - inPoint,
+          duration: isNaN(outPoint) || isNaN(inPoint) ? 0 : Math.max(0, outPoint - inPoint),
           fadeIn,
           fadeOut,
           audioFadeIn,

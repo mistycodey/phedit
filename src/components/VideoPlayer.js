@@ -73,7 +73,7 @@ const VideoPlayer = forwardRef(({
           disabled={!hasVideo || currentTime <= 0}
           title="Skip Back 10s (←)"
         >
-          ⏪
+          ⏮
         </button>
         
         <button 
@@ -82,7 +82,7 @@ const VideoPlayer = forwardRef(({
           disabled={!hasVideo}
           title={isPlaying ? 'Pause (Space)' : 'Play (Space)'}
         >
-          {isPlaying ? '⏸' : '▶'}
+          {isPlaying ? '⏸️' : '▶️'}
         </button>
         
         <button 
@@ -91,7 +91,7 @@ const VideoPlayer = forwardRef(({
           disabled={!hasVideo || currentTime >= duration}
           title="Skip Forward 10s (→)"
         >
-          ⏩
+          ⏭
         </button>
       </div>
     </div>
