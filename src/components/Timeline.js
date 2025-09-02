@@ -383,6 +383,8 @@ const Timeline = ({ currentTime, duration, inPoint, outPoint, onSeek, onSetInPoi
         <span>{formatTime(duration)}</span>
       </div>
       
+
+      
       {/* Main Timeline Track */}
       <div
         ref={timelineRef}
@@ -491,112 +493,116 @@ const Timeline = ({ currentTime, duration, inPoint, outPoint, onSeek, onSetInPoi
         </div>
       )}
 
-      {/* Enhanced Control Buttons */}
+      {/* Timeline Info and Control Buttons Combined */}
       {duration > 0 && (
-        <div className="timeline-controls">
-          <button 
-            className={`btn btn-sm ${isPreviewMode ? 'btn-primary preview-active' : 'btn-secondary'}`}
-            onClick={() => onPreviewClip(inPoint, outPoint)}
-            disabled={!hasVideo || outPoint <= inPoint}
-            title={isPreviewMode ? "Preview clip is playing..." : "Play video between IN and OUT points"}
-          >
-            {isPreviewMode ? (
-              <>
-                <span className="preview-indicator">●</span> Previewing...
-              </>
-            ) : (
-              <>
-                <span className="button-play-icon">▶</span>
-                Preview Clip
-              </>
-            )}
-          </button>
-          <button 
-            className="btn btn-sm btn-outline"
-            onClick={handleClearInOut}
-            disabled={!hasVideo}
-            title="Reset IN and OUT points to full video"
-          >
-            <span className="button-reset-icon">↻</span>
-            Clear Clip Points
-          </button>
-          <div className="timeline-extend-controls">
+        <div className="timeline-controls-row">
+          {/* Timeline Info - Left aligned */}
+          <div className="timeline-info">
+            <div className="timeline-info-section">
+              <span className="info-label">Current:</span>
+              <span className="info-value">{formatTime(currentTime)}</span>
+            </div>
+            <div className="timeline-info-section">
+              <span className="info-label">In:</span>
+              {editingField === 'in' ? (
+                <input
+                  type="text"
+                  className="time-input"
+                  value={editValue}
+                  onChange={handleTimeInputChange}
+                  onKeyDown={handleTimeInputKeyDown}
+                  onBlur={handleTimeInputBlur}
+                  autoFocus
+                  placeholder="HH:MM:SS:ms"
+                />
+              ) : (
+                <span 
+                  className="info-value clickable-time"
+                  onClick={() => handleTimeClick('in')}
+                  title="Click to edit time"
+                >
+                  {formatTime(inPoint)}
+                </span>
+              )}
+            </div>
+            <div className="timeline-info-section">
+              <span className="info-label">Out:</span>
+              {editingField === 'out' ? (
+                <input
+                  type="text"
+                  className="time-input"
+                  value={editValue}
+                  onChange={handleTimeInputChange}
+                  onKeyDown={handleTimeInputKeyDown}
+                  onBlur={handleTimeInputBlur}
+                  autoFocus
+                  placeholder="HH:MM:SS:ms"
+                />
+              ) : (
+                <span 
+                  className="info-value clickable-time"
+                  onClick={() => handleTimeClick('out')}
+                  title="Click to edit time"
+                >
+                  {formatTime(outPoint)}
+                </span>
+              )}
+            </div>
+            <div className="timeline-info-section">
+              <span className="info-label">Duration:</span>
+              <span className="info-value">{formatTime(outPoint - inPoint)}</span>
+            </div>
+          </div>
+
+          {/* Control Buttons - Right aligned */}
+          <div className="timeline-controls">
             <button 
-              className="btn btn-xs btn-outline"
-              onClick={() => handleExtendSelection(-5)}
-              disabled={!hasVideo}
-              title="Extend selection by 5 seconds on each side"
+              className={`btn btn-sm ${isPreviewMode ? 'btn-primary preview-active' : 'btn-secondary'}`}
+              onClick={() => onPreviewClip(inPoint, outPoint)}
+              disabled={!hasVideo || outPoint <= inPoint}
+              title={isPreviewMode ? "Preview clip is playing..." : "Play video between IN and OUT points"}
             >
-              -5s
+              {isPreviewMode ? (
+                <>
+                  <span className="preview-indicator">●</span> Previewing...
+                </>
+              ) : (
+                <>
+                  <span className="button-play-icon">▶</span>
+                  Preview Clip
+                </>
+              )}
             </button>
             <button 
-              className="btn btn-xs btn-outline"
-              onClick={() => handleExtendSelection(5)}
+              className="btn btn-sm btn-outline"
+              onClick={handleClearInOut}
               disabled={!hasVideo}
-              title="Shrink selection by 5 seconds on each side"
+              title="Reset IN and OUT points to full video"
             >
-              +5s
+              <span className="button-reset-icon">↻</span>
+              Clear Clip Points
             </button>
+            <div className="timeline-extend-controls">
+              <button 
+                className="btn btn-xs btn-outline"
+                onClick={() => handleExtendSelection(-5)}
+                disabled={!hasVideo}
+                title="Extend selection by 5 seconds on each side"
+              >
+                -5s
+              </button>
+              <button 
+                className="btn btn-xs btn-outline"
+                onClick={() => handleExtendSelection(5)}
+                disabled={!hasVideo}
+                title="Shrink selection by 5 seconds on each side"
+              >
+                +5s
+              </button>
+            </div>
           </div>
         </div>
       )}
-      
-      <div className="timeline-info">
-        <div className="timeline-info-section">
-          <span className="info-label">Current:</span>
-          <span className="info-value">{formatTime(currentTime)}</span>
-        </div>
-        <div className="timeline-info-section">
-          <span className="info-label">In:</span>
-          {editingField === 'in' ? (
-            <input
-              type="text"
-              className="time-input"
-              value={editValue}
-              onChange={handleTimeInputChange}
-              onKeyDown={handleTimeInputKeyDown}
-              onBlur={handleTimeInputBlur}
-              autoFocus
-              placeholder="HH:MM:SS:ms"
-            />
-          ) : (
-            <span 
-              className="info-value clickable-time"
-              onClick={() => handleTimeClick('in')}
-              title="Click to edit time"
-            >
-              {formatTime(inPoint)}
-            </span>
-          )}
-        </div>
-        <div className="timeline-info-section">
-          <span className="info-label">Out:</span>
-          {editingField === 'out' ? (
-            <input
-              type="text"
-              className="time-input"
-              value={editValue}
-              onChange={handleTimeInputChange}
-              onKeyDown={handleTimeInputKeyDown}
-              onBlur={handleTimeInputBlur}
-              autoFocus
-              placeholder="HH:MM:SS:ms"
-            />
-          ) : (
-            <span 
-              className="info-value clickable-time"
-              onClick={() => handleTimeClick('out')}
-              title="Click to edit time"
-            >
-              {formatTime(outPoint)}
-            </span>
-          )}
-        </div>
-        <div className="timeline-info-section">
-          <span className="info-label">Duration:</span>
-          <span className="info-value">{formatTime(outPoint - inPoint)}</span>
-        </div>
-      </div>
       
       <div className="timeline-instructions">
         <span>

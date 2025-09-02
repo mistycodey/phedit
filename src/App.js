@@ -631,13 +631,13 @@ function App() {
             ← Menu
           </button>
           <button className="btn btn-secondary" onClick={() => setShowHelp(true)}>
-            Help
+            ❓ Help
           </button>
           <button className="btn btn-secondary" onClick={() => setShowSettings(true)}>
-            Settings
+            ⚙️ Settings
           </button>
           <button className="btn" onClick={handleLoadVideo}>
-            Load Video
+            📁 Load Video
           </button>
         </div>
       </div>
@@ -673,7 +673,7 @@ function App() {
           ) : (
             <div className="no-video">
               <div className="no-video-content">
-                <div className="no-video-icon">📹</div>
+                <div className="no-video-icon">🎬</div>
                 <h3>No Video Loaded</h3>
                 <p>Click "Load Video" to get started</p>
                 <p className="no-video-hint">All controls will be enabled once you load a video file</p>

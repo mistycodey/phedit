@@ -84,7 +84,14 @@
       ],
       "icon": "build/icon.icns",
       "category": "public.app-category.video",
-      "artifactName": "PHEdit-${version}.dmg"
+      "artifactName": "PHEdit-${version}.dmg",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "notarize": {
+        "teamId": "${APPLE_TEAM_ID}"
+      }
     },
     "linux": {
       "target": [

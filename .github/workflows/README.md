@@ -61,14 +61,76 @@ Ensure your GitHub repository has:
 ## Troubleshooting
 
 ### Common Issues:
-1. **Build fails on macOS**: Code signing issues - the workflow disables auto-discovery
-2. **Missing artifacts**: Check file paths in workflow match your actual build output
-3. **Permission errors**: Ensure GITHUB_TOKEN has sufficient permissions
+1. **macOS "damaged" error**: The app appears damaged when users try to open it
+   - **Cause**: macOS requires apps to be code signed and notarized
+   - **Solution**: Set up proper code signing (see macOS Code Signing section below)
+   - **Quick workaround**: Users can bypass by right-clicking → "Open" or running: `xattr -cr /path/to/PHEdit.app`
+2. **Build fails on macOS**: Code signing issues - the workflow disables auto-discovery by default
+3. **Missing artifacts**: Check file paths in workflow match your actual build output
+4. **Permission errors**: Ensure GITHUB_TOKEN has sufficient permissions
 
 ### Testing:
 - Use the simple workflow first to test your build process
 - Check the Actions tab in your GitHub repository for build logs
 - Download artifacts from completed workflow runs to test
+
+## macOS Code Signing Setup
+
+To fix the "damaged" error on macOS, you need to set up proper code signing and notarization:
+
+### Prerequisites
+1. **Apple Developer Account** ($99/year)
+2. **Developer ID Application Certificate** from Apple Developer Portal
+
+### Step 1: Create Certificates
+1. Go to [Apple Developer Portal](https://developer.apple.com/account/resources/certificates/list)
+2. Create a "Developer ID Application" certificate
+3. Download the certificate and install it in Keychain Access
+4. Export as .p12 file with a password
+
+### Step 2: Set Up GitHub Secrets
+Add these secrets to your GitHub repository (Settings → Secrets and variables → Actions):
+
+- `CSC_LINK`: Base64-encoded .p12 certificate file
+  ```bash
+  base64 -i YourCertificate.p12 | pbcopy
+  ```
+- `CSC_KEY_PASSWORD`: Password for the .p12 file
+- `APPLE_ID`: Your Apple ID email
+- `APPLE_APP_SPECIFIC_PASSWORD`: Generate at [appleid.apple.com](https://appleid.apple.com)
+- `APPLE_TEAM_ID`: Found in Apple Developer Portal → Membership
+
+### Step 3: Enable Code Signing
+In `.github/workflows/build.yml`, uncomment the code signing environment variables:
+```yaml
+CSC_LINK: ${{ secrets.CSC_LINK }}
+CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+APPLE_ID: ${{ secrets.APPLE_ID }}
+APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+```
+And remove: `CSC_IDENTITY_AUTO_DISCOVERY: false`
+
+### Alternative: User Workaround (No Code Signing)
+If you can't set up code signing, users can bypass the security warning:
+
+**Method 1: Right-click method**
+1. Right-click on PHEdit.app
+2. Select "Open"
+3. Click "Open" in the security dialog
+
+**Method 2: Command line**
+```bash
+# Remove quarantine attribute
+xattr -cr /Applications/PHEdit.app
+
+# Or for downloaded .dmg
+xattr -cr ~/Downloads/PHEdit-*.dmg
+```
+
+**Method 3: System Preferences**
+1. System Preferences → Security & Privacy → General
+2. Click "Open Anyway" after the first launch attempt
 
 ## Customization
 

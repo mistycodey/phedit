@@ -494,7 +494,7 @@ const TasksScreen = ({ onBack }) => {
 
       <div className="tasks-grid">
         <div className="task-card" onClick={handleQuickFade}>
-          <div className="task-icon">🎬</div>
+          <div className="task-icon">🎭</div>
           <h3>Quick Fade</h3>
           <p>Add fade effects to your video</p>
           <div className="task-details">
@@ -506,12 +506,12 @@ const TasksScreen = ({ onBack }) => {
             </ul>
           </div>
           <div className="task-action">
-            <button className="btn btn-primary">Start Quick Fade</button>
+            <button className="btn">Start Quick Fade</button>
           </div>
         </div>
 
         <div className="task-card" onClick={handleAudioRip}>
-          <div className="task-icon">🎵</div>
+          <div className="task-icon">🎧</div>
           <h3>Audio Rip</h3>
           <p>Extract audio from video files</p>
           <div className="task-details">
@@ -523,7 +523,7 @@ const TasksScreen = ({ onBack }) => {
             </ul>
           </div>
           <div className="task-action">
-            <button className="btn btn-primary">Start Audio Rip</button>
+            <button className="btn">Start Audio Rip</button>
           </div>
         </div>
       </div>
