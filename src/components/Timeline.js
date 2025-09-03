@@ -434,7 +434,7 @@ const Timeline = ({ currentTime, duration, inPoint, outPoint, onSeek, onSetInPoi
         )}
       </div>
 
-      {/* Video Trimming Track */}
+              {/* Clip Points Track */}
       {duration > 0 && (
         <div 
           ref={clipTrackRef} 
@@ -488,7 +488,7 @@ const Timeline = ({ currentTime, duration, inPoint, outPoint, onSeek, onSetInPoi
 
           {/* Clip track labels */}
           <div className="clip-track-label">
-            <span>Video Trimming</span>
+            <span>Clip Points</span>
           </div>
         </div>
       )}

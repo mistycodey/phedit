@@ -130,6 +130,8 @@
   background: rgba(74, 158, 255, 0.6);
 }
 
+
+
 .task-steps-container {
   scrollbar-width: thin;
   scrollbar-color: rgba(74, 158, 255, 0.4) transparent;
@@ -272,9 +274,8 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  margin: 0;
+  font-family: 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: #1a1a1a;
@@ -362,6 +363,9 @@ code {
   min-height: 48px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   position: relative;
+  max-width: 1920px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .header::after {
@@ -412,6 +416,8 @@ code {
   /* Ensure video container is never covered by frame */
   border-radius: 6px;
   border: 1px solid #3a3a3a;
+  resize: none;
+  transition: height 0.1s ease;
 }
 
 .video-player {
@@ -469,6 +475,9 @@ code {
   overflow-y: auto; /* Allow scrolling if content is too tall */
   min-height: 180px; /* Reduced minimum space for controls */
   max-height: 40vh; /* Limit controls panel height */
+  max-width: 1920px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .control-section {
@@ -858,7 +867,7 @@ code {
 }
 
 .timeline {
-  margin: 8px 0;
+  margin: 8px auto;
   user-select: none;
   padding: 10px 16px; /* Reduced padding */
   background-color: #2a2a2a;
@@ -866,6 +875,8 @@ code {
   border: 1px solid #3a3a3a;
   flex: 0 0 auto; /* Don't grow or shrink */
   min-height: 100px; /* Reduced minimum height */
+  max-width: 1920px;
+  width: 100%;
 }
 
 /* Main Timeline Track (Playback) */
@@ -1772,7 +1783,7 @@ code {
   display: flex;
   align-items: center;
   gap: 15px;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: transparent;
   padding: 15px 20px;
   border-radius: 8px;
   backdrop-filter: blur(10px);
@@ -1788,8 +1799,9 @@ code {
 }
 
 .video-overlay-controls .btn-icon {
-  background-color: rgba(74, 158, 255, 0.8);
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  background-color: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  color: white;
   padding: 12px 16px;
   font-size: 18px;
   min-width: 50px;
@@ -1797,14 +1809,14 @@ code {
 }
 
 .video-overlay-controls .btn-icon:hover {
-  background-color: rgba(74, 158, 255, 1);
-  border-color: rgba(255, 255, 255, 0.6);
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 1);
   transform: scale(1.1);
 }
 
 .video-overlay-controls .btn-icon:disabled {
-  background-color: rgba(85, 85, 85, 0.5);
-  border-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(85, 85, 85, 0.3);
+  border-color: rgba(255, 255, 255, 0.3);
   transform: none;
 }
 
@@ -2224,4 +2236,88 @@ code {
   font-size: 12px;
   line-height: 1.4;
   word-break: break-word;
+}
+
+/* Force emoji icons to be white */
+.btn:has(span), .btn:has(div) {
+  color: white;
+}
+
+/* SVG icon styles for navigation buttons */
+.btn svg {
+  width: 20px;
+  height: 20px;
+  fill: white;
+  stroke: white;
+  color: white;
+}
+
+.btn-icon-only svg {
+  width: 16px;
+  height: 16px;
+  fill: white;
+  stroke: white;
+  color: white;
+}
+
+/* Make all button content white */
+.btn {
+  color: white;
+}
+
+.btn * {
+  color: white;
+}
+
+/* Video Resize Handle */
+.video-resize-handle {
+  position: relative;
+  height: 12px;
+  background: linear-gradient(135deg, #2a2a2a 0%, #252525 100%);
+  border-top: 1px solid #3a3a3a;
+  cursor: ns-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+  z-index: 5;
+}
+
+.video-resize-handle:hover {
+  background: linear-gradient(135deg, #3a3a3a 0%, #2e2e2e 100%);
+}
+
+.video-resize-handle:active {
+  background: linear-gradient(135deg, #4a4a4a 0%, #3a3a3a 100%);
+  cursor: ns-resize;
+}
+
+.resize-handle-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.video-resize-handle:hover .resize-handle-icon {
+  opacity: 1;
+}
+
+.resize-handle-icon svg {
+  width: 16px;
+  height: 16px;
+  fill: #ccc;
+}
+
+.video-resize-handle:hover .resize-handle-icon svg {
+  fill: #4a9eff;
+}
+
+/* Ensure video container can be resized */
+.video-container {
+  resize: none;
+  transition: height 0.1s ease;
 }

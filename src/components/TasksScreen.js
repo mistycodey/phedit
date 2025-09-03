@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import InfoModal from './InfoModal';
 import ConfirmModal from './ConfirmModal';
 import ExportProgressOverlay from './ExportProgressOverlay';
+import './TasksScreen.css';
 
 const { ipcRenderer } = window.require('electron');
 const path = window.require('path');
@@ -442,97 +443,121 @@ const TasksScreen = ({ onBack }) => {
   }, []);
 
   return (
-    <div className="tasks-screen">
-      <div className="tasks-header">
-        <button className="btn btn-secondary" onClick={onBack}>
-          ← Back to Menu
-        </button>
-        <h1>Quick Tasks</h1>
-        <p>Fast processing for common video operations</p>
-      </div>
+    <div className="app">
+             <div className="header">
+         <div className="header-controls">
+           <button className="btn btn-secondary btn-icon-only" onClick={onBack}>
+             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+               <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+             </svg>
+           </button>
+           {currentTask && (
+             <button className="btn btn-secondary btn-icon-only" onClick={() => {
+               setCurrentTask(null);
+               setTaskSteps([]);
+               setCurrentStep(0);
+               setSelectedFiles({ inputFile: '', outputFile: '' });
+               setTaskState({ inputPath: '', outputPath: '' });
+             }}>
+               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                 <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+               </svg>
+             </button>
+           )}
+         </div>
+         <h1>Quick Tasks</h1>
+       </div>
 
       {/* Task Steps Indicator */}
       {currentTask && taskSteps.length > 0 && (
         <div className="task-steps-container">
           <div className="task-steps-header">
-            <h3>{currentTask === 'quick-fade' ? 'Quick Fade' : 'Audio Rip'} - Progress</h3>
+            <h3>{currentTask === 'quick-fade' ? 'Quick Fade' : 'Audio Rip'}</h3>
           </div>
-                     <div className="task-steps">
-             {taskSteps.map((step, index) => (
-               <div 
-                 key={step.id} 
-                 className={`task-step ${step.completed ? 'completed' : ''} ${index === currentStep ? 'current' : ''}`}
-               >
-                 <div className="step-number">
-                   {step.completed ? '✓' : index + 1}
-                 </div>
-                 <div className="step-content">
-                   <div className="step-text">{step.text}</div>
-                   {step.details && (
-                     <div className="step-details">{step.details}</div>
-                   )}
-                 </div>
-                                   <div className="step-action">
-                    {!step.completed && (
-                      <button 
-                        className="btn btn-primary btn-sm"
-                        onClick={() => handleStepClick(step)}
-                        disabled={step.details === 'Processing...'}
-                      >
-                        {step.details === 'Processing...' ? 'Processing...' : 
-                         step.id === 1 ? 'Choose' :
-                         step.id === 2 ? 'Choose' :
-                         step.id === 3 ? 'Process' : 'Start'}
-                      </button>
-                    )}
-                  </div>
-               </div>
-             ))}
-           </div>
+          <div className="task-steps">
+            {taskSteps.map((step, index) => (
+              <div 
+                key={step.id} 
+                className={`task-step ${step.completed ? 'completed' : ''} ${index === currentStep ? 'current' : ''}`}
+              >
+                <div className="step-number">
+                  {step.completed ? '✓' : index + 1}
+                </div>
+                <div className="step-content">
+                  <div className="step-text">{step.text}</div>
+                  {step.details && (
+                    <div className="step-details">{step.details}</div>
+                  )}
+                </div>
+                <div className="step-action">
+                  {!step.completed && (
+                    <button 
+                      className="btn btn-primary btn-sm"
+                      onClick={() => handleStepClick(step)}
+                      disabled={step.details === 'Processing...'}
+                    >
+                      {step.details === 'Processing...' ? 'Processing...' : 
+                       step.id === 1 ? 'Choose' :
+                       step.id === 2 ? 'Choose' :
+                       step.id === 3 ? 'Process' : 'Start'}
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
-      <div className="tasks-grid">
-        <div className="task-card" onClick={handleQuickFade}>
-          <div className="task-icon">🎭</div>
-          <h3>Quick Fade</h3>
-          <p>Add fade effects to your video</p>
-          <div className="task-details">
-            <ul>
-              <li>6-second video fade in</li>
-              <li>3-second audio fade in</li>
-              <li>3-second fade out (video + audio)</li>
-              <li>Export processed video</li>
-            </ul>
+      <div className="main-content">
+        {!currentTask && (
+          <div style={{ paddingTop: '20px' }}>
+            <div className="tasks-grid">
+            <div className="task-card" onClick={handleQuickFade}>
+            <div className="task-icon">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style={{width: '28px', height: '28px', fill: 'white'}}>
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+            </div>
+            <h3>Quick Fade</h3>
+            <p>Add fade effects to your video</p>
+            <div className="task-details">
+              <ul>
+                <li>6-second video fade in</li>
+                <li>3-second audio fade in</li>
+                <li>3-second fade out (video + audio)</li>
+                <li>Export processed video</li>
+              </ul>
+            </div>
+            <div className="task-action">
+              <button className="btn">Start Quick Fade</button>
+            </div>
           </div>
-          <div className="task-action">
-            <button className="btn">Start Quick Fade</button>
-          </div>
-        </div>
 
-        <div className="task-card" onClick={handleAudioRip}>
-          <div className="task-icon">🎧</div>
-          <h3>Audio Rip</h3>
-          <p>Extract audio from video files</p>
-          <div className="task-details">
-            <ul>
-              <li>Extract audio track only</li>
-              <li>Multiple output formats</li>
-              <li>Preserve original quality</li>
-              <li>Fast processing</li>
-            </ul>
-          </div>
-          <div className="task-action">
-            <button className="btn">Start Audio Rip</button>
-          </div>
-        </div>
-      </div>
+          <div className="task-card" onClick={handleAudioRip}>
+            <div className="task-icon">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style={{width: '28px', height: '28px', fill: 'white'}}>
+                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+              </svg>
+            </div>
+            <h3>Audio Rip</h3>
+            <p>Extract audio from video files</p>
+            <div className="task-details">
+              <ul>
+                <li>Extract audio track only</li>
+                <li>Multiple output formats</li>
+                <li>Preserve original quality</li>
+                <li>Fast processing</li>
+              </ul>
+            </div>
+            <div className="task-action">
+                           <button className="btn">Start Audio Rip</button>
+                       </div>
+         </div>
+         </div>
+       </div>
+        )}
 
-      <div className="tasks-info">
-        <h4>About Quick Tasks:</h4>
-        <p>These tasks are designed for speed and simplicity. They use optimized settings for the best balance of quality and processing time.</p>
-        <p>For additional editing options, use the Editor mode.</p>
-        
 
       </div>
 
