@@ -307,45 +307,44 @@
 .tasks-info {
   background: #2a2a2a;
   border: 1px solid #3a3a3a;
-  border-radius: 15px;
-  padding: 25px;
+  border-radius: 6px;
+  padding: 16px;
   max-width: 800px;
   margin: 0 auto;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  overflow-y: auto; /* Enable vertical scrolling */
-  max-height: 50vh; /* Limit height to enable scrolling */
+  overflow-y: auto;
+  max-height: 50vh;
 }
 
 .tasks-info h4 {
   color: #ffffff;
-  margin-bottom: 15px;
-  font-size: 1.3rem;
+  margin-bottom: 8px;
+  font-size: 1.1rem;
 }
 
 .tasks-info p {
   color: #cccccc;
-  margin-bottom: 10px;
-  line-height: 1.6;
+  margin-bottom: 6px;
+  line-height: 1.4;
+  font-size: 0.9rem;
 }
 
 /* Task Steps Styles */
 .task-steps-container {
   background: #2a2a2a;
   border: 1px solid #3a3a3a;
-  border-radius: 15px;
-  padding: 25px;
-  margin: 0 auto 30px auto;
+  border-radius: 6px;
+  padding: 16px;
+  margin: 0 auto 20px auto;
   max-width: 600px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  overflow-y: auto; /* Enable vertical scrolling */
-  max-height: 50vh; /* Limit height to enable scrolling */
+  overflow-y: auto;
+  max-height: 50vh;
 }
 
 .task-steps-header h3 {
   color: #ffffff;
-  margin: 0 0 20px 0;
+  margin: 0 0 12px 0;
   text-align: center;
-  font-size: 1.3rem;
+  font-size: 1.1rem;
 }
 
 .task-steps {

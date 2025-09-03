@@ -5,6 +5,7 @@ import Settings from './components/Settings';
 import InfoModal from './components/InfoModal';
 import ConfirmModal from './components/ConfirmModal';
 import SessionRestoreModal from './components/SessionRestoreModal';
+
 import ExportProgressOverlay from './components/ExportProgressOverlay';
 import Help from './components/Help';
 import StartupScreen from './components/StartupScreen';
@@ -48,10 +49,11 @@ function App() {
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [infoModal, setInfoModal] = useState({ isOpen: false, title: '', message: '', type: 'info' });
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: '', message: '', onConfirm: null });
-  const [sessionRestoreModal, setSessionRestoreModal] = useState({ isOpen: false, sessionState: null });
-  const [showHelp, setShowHelp] = useState(false);
-  const [isRestoringSession, setIsRestoringSession] = useState(false);
-  const [mouseTimelinePosition, setMouseTimelinePosition] = useState(null);
+
+     const [showHelp, setShowHelp] = useState(false);
+   const [isRestoringSession, setIsRestoringSession] = useState(false);
+   const [sessionRestoreModal, setSessionRestoreModal] = useState({ isOpen: false, sessionState: null });
+   const [mouseTimelinePosition, setMouseTimelinePosition] = useState(null);
 
   const videoRef = useRef(null);
 
@@ -67,13 +69,15 @@ function App() {
     setConfirmModal({ isOpen: true, title, message, onConfirm });
   };
 
-  const closeConfirmModal = () => {
-    setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: null });
-  };
+     const closeConfirmModal = () => {
+     setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: null });
+   };
 
-  const closeSessionRestoreModal = () => {
-    setSessionRestoreModal({ isOpen: false, sessionState: null });
-  };
+   const closeSessionRestoreModal = () => {
+     setSessionRestoreModal({ isOpen: false, sessionState: null });
+   };
+
+
 
   const handleModeSelect = (mode) => {
     setAppMode(mode);
@@ -108,17 +112,17 @@ function App() {
       showInfoModal('Export Cancelled', 'The export process was cancelled successfully.', 'info');
     });
 
-    // Check for session state to restore
-    const checkSessionState = async () => {
-      try {
-        const sessionState = await ipcRenderer.invoke('get-session-state');
-        if (sessionState && sessionState.videoFilePath) {
-          setSessionRestoreModal({ isOpen: true, sessionState });
-        }
-      } catch (error) {
-        console.log('No session state to restore or error loading:', error);
-      }
-    };
+         // Check for session state to restore
+     const checkSessionState = async () => {
+       try {
+         const sessionState = await ipcRenderer.invoke('get-session-state');
+         if (sessionState && sessionState.videoFilePath) {
+           setSessionRestoreModal({ isOpen: true, sessionState });
+         }
+       } catch (error) {
+         console.log('No session state to restore or error loading:', error);
+       }
+     };
 
     checkSessionState();
 
@@ -434,18 +438,16 @@ function App() {
         if (restoreData.outPoint !== undefined) setOutPoint(restoreData.outPoint);
       }
       
-      // Restore other values
-      if (restoreData.fadeIn !== undefined) setFadeIn(restoreData.fadeIn);
-      if (restoreData.fadeOut !== undefined) setFadeOut(restoreData.fadeOut);
-      if (restoreData.audioFadeIn !== undefined) setAudioFadeIn(restoreData.audioFadeIn);
-      if (restoreData.audioFadeOut !== undefined) setAudioFadeOut(restoreData.audioFadeOut);
-      if (restoreData.silenceAtStart !== undefined) setSilenceAtStart(restoreData.silenceAtStart);
-      if (restoreData.blackScreenAtStart !== undefined) setBlackScreenAtStart(restoreData.blackScreenAtStart);
-      if (restoreData.exportQuality !== undefined) setExportQuality(restoreData.exportQuality);
-      if (restoreData.exportSize !== undefined) setExportSize(restoreData.exportSize);
-      if (restoreData.exportType !== undefined) setExportType(restoreData.exportType);
-      
-      showInfoModal('Session Restored', 'Your previous session settings have been restored successfully.', 'success');
+             // Restore other values
+       if (restoreData.fadeIn !== undefined) setFadeIn(restoreData.fadeIn);
+       if (restoreData.fadeOut !== undefined) setFadeOut(restoreData.fadeOut);
+       if (restoreData.audioFadeIn !== undefined) setAudioFadeIn(restoreData.audioFadeIn);
+       if (restoreData.audioFadeOut !== undefined) setAudioFadeOut(restoreData.audioFadeOut);
+       if (restoreData.silenceAtStart !== undefined) setSilenceAtStart(restoreData.silenceAtStart);
+       if (restoreData.blackScreenAtStart !== undefined) setBlackScreenAtStart(restoreData.blackScreenAtStart);
+       if (restoreData.exportQuality !== undefined) setExportQuality(restoreData.exportQuality);
+       if (restoreData.exportSize !== undefined) setExportSize(restoreData.exportSize);
+       if (restoreData.exportType !== undefined) setExportType(restoreData.exportType);
     } catch (error) {
       console.error('Error restoring session:', error);
       showInfoModal('Restore Error', 'Failed to restore some session settings. The video file may no longer be available.', 'warning');
@@ -647,21 +649,29 @@ function App() {
   return (
     <div className={`app ${!videoFile ? 'no-video-loaded' : ''}`}>
       <div className="header">
-        <div className="logo">PHEdit</div>
         <div className="header-controls">
-          <button className="btn btn-secondary" onClick={handleBackToStartup}>
-            ← Menu
+          <button className="btn btn-secondary btn-icon-only" onClick={handleBackToStartup}>
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
           </button>
-          <button className="btn btn-secondary" onClick={() => setShowHelp(true)}>
-            ❓ Help
+          <button className="btn btn-secondary btn-icon-only" onClick={() => setShowHelp(true)}>
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/>
+            </svg>
           </button>
-          <button className="btn btn-secondary" onClick={() => setShowSettings(true)}>
-            ⚙️ Settings
-          </button>
-          <button className="btn" onClick={handleLoadVideo}>
-            📁 Load Video
+          <button className="btn btn-secondary btn-icon-only" onClick={() => setShowSettings(true)}>
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+            </svg>
           </button>
         </div>
+        <button className="btn" onClick={handleLoadVideo}>
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style={{width: '20px', height: '20px', fill: 'white', marginRight: '8px'}}>
+            <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+          </svg>
+          Load Video
+        </button>
       </div>
       
       <div className="main-content">
@@ -766,22 +776,22 @@ function App() {
         type={infoModal.type}
       />
 
-      <ConfirmModal
-        isOpen={confirmModal.isOpen}
-        onClose={closeConfirmModal}
-        onConfirm={confirmModal.onConfirm}
-        title={confirmModal.title}
-        message={confirmModal.message}
-      />
+             <ConfirmModal
+         isOpen={confirmModal.isOpen}
+         onClose={closeConfirmModal}
+         onConfirm={confirmModal.onConfirm}
+         title={confirmModal.title}
+         message={confirmModal.message}
+       />
 
-      <SessionRestoreModal
-        isOpen={sessionRestoreModal.isOpen}
-        onClose={closeSessionRestoreModal}
-        onRestore={handleSessionRestore}
-        sessionState={sessionRestoreModal.sessionState}
-      />
+       <SessionRestoreModal
+         isOpen={sessionRestoreModal.isOpen}
+         onClose={closeSessionRestoreModal}
+         onRestore={handleSessionRestore}
+         sessionState={sessionRestoreModal.sessionState}
+       />
 
-      <ExportProgressOverlay
+       <ExportProgressOverlay
         isVisible={isProcessing || isPreparing}
         progress={processingProgress}
         isPreparing={isPreparing}

@@ -64,15 +64,11 @@ const SessionRestoreModal = ({ isOpen, onClose, onRestore, sessionState }) => {
     <div className="modal-overlay">
       <div className="modal-content session-restore-modal">
         <div className="modal-header">
-          <h2>Restore Previous Session</h2>
+          <h2>Use last settings?</h2>
           <button className="btn-close" onClick={onClose}>×</button>
         </div>
         
         <div className="modal-body">
-          <p className="restore-description">
-            The following settings from your previous session were found. 
-            Select which ones you'd like to restore:
-          </p>
           
           <div className="restore-options">
             {sessionState.videoFilePath && (

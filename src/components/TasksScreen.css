@@ -1,0 +1,107 @@
+/* TasksScreen - Clean, minimal styling to match Editor */
+
+/* Override header title size for TasksScreen */
+.app .header h1 {
+  font-size: 1.5rem !important;
+  margin: 8px 0 6px 0 !important;
+}
+
+.tasks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 32px;
+  max-width: 600px;
+  margin: 0 auto 24px auto;
+  padding: 0 20px;
+}
+
+.task-card {
+  background: #2a2a2a;
+  border: 1px solid #3a3a3a;
+  border-radius: 6px;
+  padding: 16px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.task-card:hover {
+  border-color: #4a9eff;
+  box-shadow: 0 6px 16px rgba(74, 158, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.task-icon {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.task-card h3 {
+  color: #ffffff;
+  margin-bottom: 6px;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.task-card > p {
+  color: #cccccc;
+  margin-bottom: 8px;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+.task-details {
+  margin-bottom: 12px;
+}
+
+.task-details ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.task-details li {
+  padding: 2px 0;
+  color: #cccccc;
+  position: relative;
+  padding-left: 16px;
+  font-size: 0.8rem;
+}
+
+.task-details li:before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #4a9eff;
+  font-weight: bold;
+}
+
+.task-action {
+  text-align: center;
+  margin-top: 16px;
+}
+
+.task-action button {
+  width: 100%;
+  padding: 8px;
+  font-size: 0.85rem;
+}
+
+/* Task Steps Styles */
+.task-steps-container {
+  background: #2a2a2a;
+  border: 1px solid #3a3a3a;
+  border-radius: 6px;
+  padding: 16px;
+  margin: 20px auto 20px auto;
+  max-width: 600px;
+  overflow-y: auto;
+  max-height: 50vh;
+}
+
+.task-steps-header h3 {
+  color: #ffffff;
+  margin: 0 0 12px 0;
+  text-align: center;
+  font-size: 1.1rem;
+}
